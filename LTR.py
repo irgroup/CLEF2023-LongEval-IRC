@@ -9,18 +9,19 @@ from sklearn import svm
 from tqdm import tqdm
 import xgboost as xgb
 
+os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
 if not pt.started():
     pt.init()
 
 # Create Index
 # !rm -rf ./index_t1/*
-# indexer = pt.TRECCollectionIndexer("./index_t1", blocks=True, verbose=True)
+# indexer = pt.TRECCollectionIndexer("./index_t1", meta_tagy={'text' : 'ELSE'}, blocks=True, verbose=True)
 
 # doc_paths_t1 = [os.path.join("data/publish/English/Documents/Trec/", path) for path in os.listdir("data/publish/English/Documents/Trec/")]
 # indexref_t1 = indexer.index(doc_paths_t1)
 
 
-index_t1 = pt.IndexFactory.of("./index_t1")
+index_t1 = pt.IndexFactory.of("./data/index/index_t1")
 
 query_path_t1 = "data/publish/English/Queries/train.trec"
 topics_t1 = pt.io.read_topics(query_path_t1)
