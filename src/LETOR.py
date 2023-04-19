@@ -1,4 +1,4 @@
-from typing import Union, Optional, List, Any, Dict
+from typing import Union, Optional, List, Any, Dict, Set
 import pandas as pd
 import pyterrier as pt
 import numpy as np
@@ -91,12 +91,12 @@ class LETOR:
 
     ############## Doc index ##############
     def tf(self, token: str) -> int:
-        tf = self.lexicon[token].getFrequency()
+        tf = self.doc_lex[token].getFrequency()
         logger.info(f"tf(`{token}`) = {tf}")
         return tf
 
     def df(self, token: str) -> int:
-        df = self.lexicon[token].getDocumentFrequency()
+        df = self.doc_lex[token].getDocumentFrequency()
         logger.info(f"df(`{token}`) = {df}")
         return df
 
@@ -106,9 +106,7 @@ class LETOR:
         return idf
 
     # query index
-    def prepare_query_index(
-        self, query_path: str
-    ) -> Union[pd.DataFrame, dict[str, int]]:
+    def prepare_query_index(self, query_path: str) -> Union[pd.DataFrame, Dict[str, int]]:
         # prepare df
         queries = pt.io.read_topics(query_path)
         queries = queries.reset_index().rename(columns={"index": "docno"})
@@ -120,12 +118,18 @@ class LETOR:
         return queries, qid_to_docno
 
     def index_queries(self, queries: pd.DataFrame) -> pt.index:
-        pd_indexer = pt.DFIndexer("./tmp", type=pt.IndexingType.MEMORY)
-        indexref2 = pd_indexer.index(queries["query"], queries["docno"], queries["qid"])
-        return pt.IndexFactory.of(indexref2)
+        # pd_indexer = pt.DFIndexer("./tmp", type=pt.IndexingType.MEMORY)
+        # indexref2 = pd_indexer.index(queries["query"], queries["docno"], queries["qid"])
+        queries = queries.rename(columns={"query": "text"})
+        iter_indexer = pt.IterDictIndexer(
+            "./tmp", type=pt.IndexingType.MEMORY, meta={"docno": 20, "text": 4096}
+        )
+        indexref = iter_indexer.index(queries.to_dict("records"))
+
+        return pt.IndexFactory.of(indexref)
 
     # get tokens
-    def get_query_tokens(self, query_id: int) -> set[str]:
+    def get_query_tokens(self, query_id: int) -> Set[str]:
         """Use a separate index to get the full processing pipeline for the query."""
         query_tokens = set()
         index_id = self.qid_to_docno[query_id]
@@ -136,7 +140,7 @@ class LETOR:
         return query_tokens
 
     # get doc tokens
-    def get_doc_tokens(self, doc_id: int) -> set[str]:
+    def get_doc_tokens(self, doc_id: int) -> Set[str]:
         doc_tokens = set()
         posting = self.doc_di.getPostings(self.doc_doi.getDocumentEntry(doc_id))
         for t in posting:
@@ -145,7 +149,7 @@ class LETOR:
         return doc_tokens
 
     ########### Query ###########
-    def get_doc_tf(self, query_id, doc_id) -> list[int]:
+    def get_doc_tf(self, query_id, doc_id) -> List[int]:
         query_tokens = self.get_query_tokens(query_id)
         doc_tokens = self.get_doc_tokens(doc_id)
         relevant_token = query_tokens.intersection(doc_tokens)
@@ -168,7 +172,7 @@ class LETOR:
         return tf_idf if tf_idf else [0]
 
     ############## Feature API ##############
-    def get_features_letor(self, query_id: int, doc_id: int) -> int:
+    def get_features_letor(self, query_id: int, doc_id: int) -> List[Union[int, float]]:
         if self.caching and self.cache:
             features = self.cache.get(str(query_id) + "-" + str(doc_id))
             if features:
@@ -285,7 +289,7 @@ class LETOR:
         return stream_length
 
     ########## Idf ##########
-    def idf_inverse_document_frequency_16(self, idfs: list[float]) -> float:
+    def idf_inverse_document_frequency_16(self, idfs: List[float]) -> float:
         """Sum of the inverse document frequency of the query terms.
 
         Args:
