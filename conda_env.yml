@@ -1,9 +1,13 @@
 name: LongEval
 dependencies:
-  - python=3.9
-  - python-terrier
+  - python=3.8
+  - ipykernel
+  - pandas=1.5.3
   - pip:
     - tqdm
-    - -u git+https://github.com/terrier-org/pyterrier.git#egg=python-terrier
-    - -u git+https://github.com/terrierteam/pyterrier_colbert
+    - transformers==3.0.2
+    - python-terrier
+    - git+https://github.com/terrier-org/pyterrier.git#egg=python-terrier
+    - git+https://github.com/terrierteam/pyterrier_colbert
     - xgboost
+    - faiss-gpu==1.6.3
