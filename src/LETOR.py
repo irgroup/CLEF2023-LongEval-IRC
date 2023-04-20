@@ -1,43 +1,11 @@
-from typing import Union, Optional, List, Any, Dict, Set
+import json
+import os
+from typing import Any, Dict, List, Optional, Set, Union
+
+import numpy as np
 import pandas as pd
 import pyterrier as pt
-import numpy as np
-import json
-import logging
-import os
-import tqdm
-
-
-class TqdmLoggingHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET):
-        super().__init__(level)
-
-    def emit(self, record):
-        try:
-            msg = self.format(record)
-            tqdm.tqdm.write(msg)
-            self.flush()
-        except Exception:
-            self.handleError(record)
-
-
-# create logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-# create formatter
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
-logger.addHandler(TqdmLoggingHandler())
+from config import logger
 
 
 class LETOR:
