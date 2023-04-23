@@ -1,11 +1,15 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
-import pandas as pd
-import pyterrier as pt
-from config import logger
+import pandas as pd  # type: ignore
+import pyterrier as pt  # type: ignore
+
+from config import get_new_logger
+
+letor_logger = get_new_logger("letor")
+caching_logger = get_new_logger("caching")
 
 
 class LETOR:
@@ -14,7 +18,7 @@ class LETOR:
         index,
         query_path: str,
         caching: bool = True,
-        cache_dir: str = "cache.jsonl",
+        cache_dir: str = "data/cache.jsonl",
     ) -> None:
         # Doc index
         self.num_tokens = index.getCollectionStatistics().getNumberOfTokens()
@@ -46,35 +50,37 @@ class LETOR:
                     entry = json.loads(line)
                     cache_id = list(entry.keys())[0]
                     cache[cache_id] = entry[cache_id]
+            caching_logger.info("Cache loaded")
             return cache
         else:
-            logger.warning("Cache not found")
+            caching_logger.warning("Cache not found")
             return None
 
     def write_to_cache(self, cache_line: Dict[str, List[Any]]) -> None:
         with open(self.cache_dir, "a+") as f:
             json.dump(cache_line, f)
             f.write("\n")
-        logger.info(f"Cache updated with {cache_line.keys()}")
 
     ############## Doc index ##############
     def tf(self, token: str) -> int:
         tf = self.doc_lex[token].getFrequency()
-        logger.info(f"tf(`{token}`) = {tf}")
+        letor_logger.info(f"tf(`{token}`) = {tf}")
         return tf
 
     def df(self, token: str) -> int:
         df = self.doc_lex[token].getDocumentFrequency()
-        logger.info(f"df(`{token}`) = {df}")
+        letor_logger.info(f"df(`{token}`) = {df}")
         return df
 
     def idf(self, token: str) -> float:
         idf = np.log(self.num_docs / self.doc_lex[token].getDocumentFrequency())
-        logger.info(f"idf(`{token}`) = {idf}")
+        letor_logger.info(f"idf(`{token}`) = {idf}")
         return idf
 
     # query index
-    def prepare_query_index(self, query_path: str) -> Union[pd.DataFrame, Dict[str, int]]:
+    def prepare_query_index(
+        self, query_path: str
+    ) -> Tuple[pd.DataFrame, Dict[int, int]]:
         # prepare df
         queries = pt.io.read_topics(query_path)
         queries = queries.reset_index().rename(columns={"index": "docno"})
@@ -136,7 +142,7 @@ class LETOR:
     # get tf-idf for query and doc
     def tf_idf(self, tf, idf):
         tf_idf = [tf[i] * idf[i] for i in range(len(tf))]
-        logger.info(f"tf_idf = {tf_idf}")
+        letor_logger.info(f"tf_idf = {tf_idf}")
         return tf_idf if tf_idf else [0]
 
     ############## Feature API ##############
@@ -144,7 +150,9 @@ class LETOR:
         if self.caching and self.cache:
             features = self.cache.get(str(query_id) + "-" + str(doc_id))
             if features:
-                logger.info(f"Cache hit for query '{query_id}' and doc '{doc_id}'")
+                caching_logger.info(
+                    f"Cache hit for query '{query_id}' and doc '{doc_id}'"
+                )
                 return features
 
         # prepare stats
@@ -197,7 +205,7 @@ class LETOR:
             # url dwell time
         ]
         if self.caching:
-            logger.info(f"cache features for '{query_id}-{doc_id}'")
+            caching_logger.info(f"Cache features for '{query_id}-{doc_id}'")
             self.write_to_cache({str(query_id) + "-" + str(doc_id): features})
 
         return features
@@ -222,7 +230,7 @@ class LETOR:
 
         covered_query_term_number = len(query_tokens.intersection(doc_tokens))
 
-        logger.info(f"covered_query_term_number = {covered_query_term_number}")
+        letor_logger.info(f"covered_query_term_number = {covered_query_term_number}")
         return covered_query_term_number
 
     def covered_query_term_ratio_6(self, query_id: int, doc_id: int) -> float:
@@ -240,7 +248,7 @@ class LETOR:
             index_id
         ) / self.doc_doi.getDocumentLength(doc_id)
 
-        logger.info(f"covered_query_term_ratio = {covered_query_term_ratio}")
+        letor_logger.info(f"covered_query_term_ratio = {covered_query_term_ratio}")
         return covered_query_term_ratio
 
     def stream_length_11(self, doc_id: int) -> int:
@@ -253,7 +261,7 @@ class LETOR:
             int: length of the document.
         """
         stream_length = self.doc_doi.getDocumentLength(doc_id)
-        logger.info(f"stream_length = {stream_length}")
+        letor_logger.info(f"stream_length = {stream_length}")
         return stream_length
 
     ########## Idf ##########
@@ -267,7 +275,7 @@ class LETOR:
             float: sum of the inverse document frequency of the query terms.
         """
         sum_of_idf = sum(idfs)
-        logger.info(f"summed_query_idf = {sum_of_idf}")
+        letor_logger.info(f"summed_query_idf = {sum_of_idf}")
         return sum_of_idf
 
     ########## boolean ##########

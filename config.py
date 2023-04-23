@@ -1,12 +1,19 @@
 import logging
-import tqdm
+from typing import Any, Dict, Union
 
-CONFIG = {
+import tqdm  # type: ignore
+
+CONFIG: Dict[str, Any] = {
     "t1": {
         "index_name": "index_t1",
         "docs": "data/publish/English/Documents/Trec/",
-        "topics": "data/publish/English/Queries/train.trec",
-        "qrels": "data/publish/French/Qrels/train.txt",
+        "train": {
+            "topics": "data/publish/English/Queries/train.trec",
+            "qrels": "data/publish/French/Qrels/train.txt",
+        },
+        "test": {
+            "topics": "data/publish/English/Queries/heldout.trec",
+        },
     }
 }
 
@@ -26,34 +33,38 @@ class TqdmLoggingHandler(logging.Handler):
             self.handleError(record)
 
 
-class LETORLoggingHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET) -> None:
-        super().__init__(level)
+def get_console_handler() -> logging.Handler:
+    """Create a console handler for logging.
 
-    def emit(self, record):
-        try:
-            msg = self.format(record)
-            tqdm.tqdm.write(msg)
-            self.flush()
-        except Exception:
-            self.handleError(record)
+    Returns:
+        logging.Handler: The console handler.
+    """
+    formatter = logging.Formatter(
+        "[%(asctime)s][%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    return console_handler
 
 
-# create logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+def get_new_logger(name: str) -> logging.Logger:
+    """Get the logger from a given name.
 
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+    Args:
+        name (str): Name of the logger.
 
-# create formatter
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    Returns:
+        logging.Logger: The logger.
+    """
+    logger = logging.getLogger(name)
 
-# add formatter to ch
-ch.setFormatter(formatter)
+    ch = get_console_handler()
+    logger.addHandler(ch)
+    return logger
 
-# add ch to logger
-logger.addHandler(ch)
-logger.addHandler(TqdmLoggingHandler())
-logger.addHandler(LETORLoggingHandler())
+
+logger_tqdm = get_new_logger("tqdm")
+logger_tqdm.addHandler(TqdmLoggingHandler())
+
+logger = get_new_logger(__name__)
