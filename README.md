@@ -2,8 +2,8 @@
 
 
 ## Index 
-```python utility.create_index --index "t1"```
+```python -m src.create_index --index WT```
 
 
 ## Create Passages from a dataset:
-```python utility.create_passages --index "t1"```
+```python -m src.create_passages --index WT```
