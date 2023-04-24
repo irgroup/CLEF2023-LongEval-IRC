@@ -1,12 +1,42 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""LambdaMART System for LongEval 2023.
+
+This system uses BM25 as a first stage ranker and LambdaMART as a second stage re-ranker.
+The LambdaMART uses the XGBoost model and the LETOR features and was trained on the LongEval WT dataset.
+
+Example:
+    Run the system with the following command::
+
+        $ python -m systems.LambdaMART --index WT
+    
+    Train the model with the following command::
+
+        $ python -m systems.LambdaMART --index WT --train 
+"""
 import json
 import os
+import pickle
+from argparse import ArgumentParser
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd  # type: ignore
 import pyterrier as pt  # type: ignore
+import yaml  # type: ignore
 
-from config import get_new_logger
+from exp_logger import get_new_logger  # type: ignore
+from src.exp_logger import logger
+from src.load_index import setup_system
+
+with open("settings.yml", "r") as yamlfile:
+    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
+
+os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
+
+if not pt.started():
+    pt.init()
+
 
 letor_logger = get_new_logger("letor")
 caching_logger = get_new_logger("caching")
@@ -297,3 +327,108 @@ class LETOR:
             return 1
         else:
             return 0
+
+
+def get_system() -> pt.BatchRetrieve:
+    """Return the system as a pyterrier BatchRetrieve object.
+
+    Args:
+        index (pt.IndexFactory): The index to be used in the system.
+
+    Returns:
+        pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
+    """
+    logger.info("Loading LambdaMART model...")
+    LambdaMART_pipe = pickle.load(open("data/models/BM25-XGB-LETOR.model", "rb"))
+    return LambdaMART_pipe
+
+
+def train_model(
+    index: pt.IndexFactory, topics: pd.DataFrame, qrels: pd.DataFrame, index_name: str
+):
+    """Train the LambdaMART model with LETOR features and save it to disk. The model is
+    trained on the provided dataset.
+
+    Args:
+        index (pt.IndexFactory): Index of all documents.
+        topics (pd.DataFrame): The topics to be used for training.
+        qrels (pd.DataFrame): The qrels to be used for training.
+        index_name (str): Name of the index (WT, ST or LT) for the LETOR features.
+    """
+
+    train_topics, validation_topics, test_topics = np.split(
+        topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
+    )
+    train_qrels, validation_qrels, test_qrels = np.split(
+        qrels, [int(0.6 * len(qrels)), int(0.8 * len(qrels))]
+    )
+    letor = LETOR(index, query_path=config[index_name]["topics"])
+
+    def _features(row):
+        docid = row["docid"]
+        queryid = row["qid"]
+        features = row["features"]  # get the features from WMODELs
+        letor_features = letor.get_features_letor(queryid, docid)
+        return np.append(features, letor_features)
+
+    fbr = pt.FeaturesBatchRetrieve(
+        index,
+        controls={"wmodel": "BM25"},
+        features=[
+            "WMODEL:Tf",
+            "WMODEL:TF_IDF",
+            "WMODEL:BM25",
+        ],
+    ) >> pt.apply.doc_features(_features)
+
+    lmart_x = fbr.sklearn.XGBRanker(
+        objective="rank:ndcg",
+        learning_rate=0.1,
+        gamma=1.0,
+        min_child_weight=0.1,
+        max_depth=6,
+        verbose=100,
+        random_state=42,
+    )
+
+    logger.info("Training LambdaMART model started...")
+    LambdaMART_pipe = fbr >> pt.ltr.apply_learned_model(lmart_x, form="ltr")
+    LambdaMART_pipe.fit(train_topics, train_qrels, validation_topics, validation_qrels)
+    logger.info("Training LambdaMART model finished.")
+
+    logger.info("Save model to disk...")
+    pickle.dump(
+        LambdaMART_pipe,
+        open("./data/models/BM25-XGB-LETOR.model", "wb"),
+    )
+
+
+def main(args):
+    filename = __file__.split("/")[-1]
+    path = "results/TREC/IRCologne_" + filename[:-2] + args.index
+
+    index, topics, _ = setup_system(args.index)
+
+    system = get_system(index)
+    results = system.transform(topics)
+
+    pt.io.write_results(res=results, filename=path, format="trec")
+    logger.info("Writing results to %s", path)
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser(description="Create an pyterrier index from a config.")
+    parser.add_argument(
+        "--index",
+        type=str,
+        required=True,
+        help="Name of the dataset in the config file (WT, ST or LT)",
+    )
+    parser.add_argument(
+        "--train",
+        required=False,
+        action="store_true",
+        help="Train the model.",
+    )
+
+    main(parser.parse_args())

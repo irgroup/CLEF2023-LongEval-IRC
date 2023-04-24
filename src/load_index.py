@@ -3,12 +3,14 @@ from typing import Tuple
 
 import pandas as pd  # type: ignore
 import pyterrier as pt  # type: ignore
-
-from config import CONFIG, INDEX_DIR
+import yaml  # type: ignore
 
 os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
 if not pt.started():
     pt.init()
+
+with open("settings.yml", "r") as yamlfile:
+    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 
 def load_index(index_name: str) -> pt.IndexFactory:
@@ -20,7 +22,7 @@ def load_index(index_name: str) -> pt.IndexFactory:
     Returns:
         pt.IndexFactory: The loaded index.
     """
-    index = pt.IndexFactory.of(INDEX_DIR + index_name)
+    index = pt.IndexFactory.of(config["index_dir"] + index_name)
     print(
         "Loaded index with ",
         index.getCollectionStatistics().getNumberOfDocuments(),
@@ -46,7 +48,7 @@ def setup_system(
     else:
         split = "test"
 
-    index = load_index(CONFIG[index_name]["index_name"])
-    topics = pt.io.read_topics(CONFIG[index_name][split]["topics"])
-    qrels = pt.io.read_qrels(CONFIG[index_name][split]["qrels"])
+    index = load_index(config[index_name]["index_name"])
+    topics = pt.io.read_topics(config[index_name][split]["topics"])
+    qrels = pt.io.read_qrels(config[index_name][split]["qrels"])
     return index, topics, qrels
