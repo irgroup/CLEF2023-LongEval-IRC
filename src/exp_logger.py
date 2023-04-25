@@ -2,6 +2,19 @@ import logging
 
 import tqdm  # type: ignore
 
+import os
+import yaml  # type: ignore
+
+with open("settings.yml", "r") as yamlfile:
+    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
+
+os.environ["JAVA_HOME"] = config["JAVA_HOME"]
+
+import pyterrier as pt
+
+if not pt.started():
+    pt.init(boot_packages=["com.github.terrierteam:terrier-prf:-SNAPSHOT"])
+
 
 class TqdmLoggingHandler(logging.Handler):
     def __init__(self, level=logging.NOTSET):

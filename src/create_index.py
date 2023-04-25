@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Create an pyterrier index from the index name and the config in the config file.
 
+Set /indexIindex_WT/data.properties to index.meta.data-source=fileinmem
+
 Example:
     Run the system with the following command::
 
@@ -10,12 +12,10 @@ Example:
 import os
 from argparse import ArgumentParser
 
-import pyterrier as pt  # type: ignore
-
-if not pt.started():
-    pt.init()
-
 import yaml  # type: ignore
+
+from src.exp_logger import logger  # type: ignore
+import pyterrier as pt  # type: ignore
 
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
@@ -42,9 +42,7 @@ def create_index(index_name: str) -> pt.IndexFactory:
         verbose=True,
     )
 
-    documents = [
-        os.path.join(documents_path, path) for path in os.listdir(documents_path)
-    ]
+    documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
     index = indexer.index(documents)
 
     return index

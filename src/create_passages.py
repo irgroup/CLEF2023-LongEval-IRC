@@ -14,16 +14,12 @@ import os
 from argparse import ArgumentParser
 from typing import Any, Dict, Union
 
+from src.exp_logger import logger  # type: ignore
 import pandas as pd  # type: ignore
 import pyterrier as pt  # type: ignore
 
-os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
-if not pt.started():
-    pt.init()
-
 from tqdm import tqdm  # type: ignore
 
-from exp_logger import logger  # type: ignore
 from src.load_index import setup_system  # type: ignore
 
 
@@ -46,8 +42,7 @@ def create_passeges(index_name: str) -> None:
     # Passage creation pipeline
     pipe = (
         pt.BatchRetrieve(index, wmodel="BM25", metadata=["docno", "text"])
-        >> pt.text.sliding(length=128, stride=64, prepend_attr=None, text_attr="text")
-        % 1000
+        >> pt.text.sliding(length=128, stride=64, prepend_attr=None, text_attr="text") % 1000
         >> pt.text.scorer(body_attr="text", wmodel="BM25")
     )
 
@@ -66,17 +61,13 @@ def create_passeges(index_name: str) -> None:
         passages["docno_full"] = passages["docno"].str.split("%").str[0]
 
         # Merge qrels to passeges
-        passages_graded = passages.merge(
-            qrels, left_on="docno_full", right_on="docno"
-        ).sort_values("score", ascending=False)
+        passages_graded = passages.merge(qrels, left_on="docno_full", right_on="docno").sort_values(
+            "score", ascending=False
+        )
 
         # Create triplets
-        passages_rel = passages_graded[passages_graded["label"] == 1][
-            ["docno_x", "text"]
-        ]
-        passages_not_rel = passages_graded[passages_graded["label"] == 0][
-            ["docno_x", "text"]
-        ]
+        passages_rel = passages_graded[passages_graded["label"] == 1][["docno_x", "text"]]
+        passages_not_rel = passages_graded[passages_graded["label"] == 0][["docno_x", "text"]]
 
         min_len = min([len(passages_rel), len(passages_not_rel)])
 
@@ -89,9 +80,7 @@ def create_passeges(index_name: str) -> None:
                 "pid-": passages_not_rel["docno_x"].to_list()[:min_len],
             }
         )
-        triplets.to_csv(
-            f"data/passages/triplets/{qid}.csv", index=False, sep="\t", header=False
-        )
+        triplets.to_csv(f"data/passages/triplets/{qid}.csv", index=False, sep="\t", header=False)
 
         # Create collection
         passages[["docno", "text", "docno_full"]].to_csv(
@@ -127,12 +116,8 @@ def merge_passages() -> None:
     # Queries
     queries = topics.reset_index()
     queries_patch = queries[["index", "qid"]]
-    queries_patch.to_csv(
-        basedir + "queries-patch.tsv", index=False, sep="\t", header=False
-    )
-    queries[["index", "query"]].to_csv(
-        basedir + "queries.tsv", index=False, sep="\t", header=False
-    )
+    queries_patch.to_csv(basedir + "queries-patch.tsv", index=False, sep="\t", header=False)
+    queries[["index", "query"]].to_csv(basedir + "queries.tsv", index=False, sep="\t", header=False)
     logger.info("Saved Queries")
 
     # Docs
@@ -148,16 +133,12 @@ def merge_passages() -> None:
     docs_patch = passages[["index", 0, 2]]
     docs_patch.to_csv(basedir + "docs_patch.tsv", sep="\t", header=False, index=False)
 
-    passages[["index", 1]].to_csv(
-        basedir + "collection.tsv", sep="\t", header=False, index=False
-    )
+    passages[["index", 1]].to_csv(basedir + "collection.tsv", sep="\t", header=False, index=False)
     logger.info("Saved Docs")
 
     # Triplets
     triplets = pd.read_csv("data/passages/triplets.train.tsv", sep="\t", header=None)
-    triplets = triplets.merge(docs_patch, left_on=1, right_on=0).rename(
-        columns={"index": "pid+"}
-    )
+    triplets = triplets.merge(docs_patch, left_on=1, right_on=0).rename(columns={"index": "pid+"})
     triplets = triplets.merge(docs_patch, left_on="2_x", right_on=0).rename(
         columns={"index": "pid-"}
     )

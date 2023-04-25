@@ -9,22 +9,21 @@ Example:
 
         $ python -m systems.BM25+RM3 --index WT
 """
-import os
 from argparse import ArgumentParser
+from src.exp_logger import logger
 
 import pyterrier as pt  # type: ignore
 
-from src.exp_logger import logger
 from src.load_index import setup_system
 
-os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
+import yaml  # type: ignore
 
-if not pt.started():
-    pt.init()
+with open("settings.yml", "r") as yamlfile:
+    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 
 def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
-    """Return the system as a pyterrier BatchRetrieve object.
+    """Return the system as a pyterrierpt.init(boot_packages=[“com.github.terrierteam:terrier-prf:-SNAPSHOT”]) BatchRetrieve object.
 
     Args:
         index (pt.IndexFactory): The index to be used in the system.
@@ -47,6 +46,9 @@ def main(args):
     results = system.transform(topics)
 
     pt.io.write_results(res=results, filename=path, format="trec")
+    pt.io.write_results(
+        res=results, filename=path.replace("TREC", "Compressed") + ".res.gz", format="trec"
+    )
     logger.info("Writing results to %s", path)
 
 

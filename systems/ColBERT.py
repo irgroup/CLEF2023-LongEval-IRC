@@ -14,18 +14,12 @@ Example:
 
         $ python -m systems.ColBERT --index WT
 """
-import os
 from argparse import ArgumentParser
+from src.exp_logger import logger
 
 import pyterrier as pt  # type: ignore
-
-os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
-if not pt.started():
-    pt.init()
-
 import pyterrier_colbert.ranking  # type: ignore
 
-from src.exp_logger import logger
 from src.load_index import setup_system
 
 
@@ -61,6 +55,9 @@ def main(args):
     results = system.transform(topics)
 
     pt.io.write_results(res=results, filename=path, format="trec")
+    pt.io.write_results(
+        res=results, filename=path.replace("TREC", "Compressed") + ".res.gz", format="trec"
+    )
     logger.info("Writing results to %s", path)
 
 

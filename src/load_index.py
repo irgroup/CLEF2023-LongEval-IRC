@@ -2,12 +2,10 @@ import os
 from typing import Tuple
 
 import pandas as pd  # type: ignore
+from src.exp_logger import logger  # type: ignore
+
 import pyterrier as pt  # type: ignore
 import yaml  # type: ignore
-
-os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"
-if not pt.started():
-    pt.init()
 
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)

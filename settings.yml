@@ -7,3 +7,4 @@ WT:
   test:
     topics: "data/publish/English/Queries/heldout.trec"
 index_dir: "./data/index/"
+JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
