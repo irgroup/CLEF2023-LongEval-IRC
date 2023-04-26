@@ -7,7 +7,7 @@ This system uses BM25 and query expansion with RM3.
 Example:
     Run the system with the following command::
 
-        $ python -m systems.BM25+RM3 --index WT
+        $ python -m systems.BM25_RM3 --index WT
 """
 from argparse import ArgumentParser
 from src.exp_logger import logger
@@ -31,7 +31,7 @@ def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
     Returns:
         pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
     """
-    bm25 = pt.BatchRetrieve(index, wmodel="BM25")
+    bm25 = pt.BatchRetrieve(index, wmodel="BM25").parallel(6)
     rm3_pipe = bm25 >> pt.rewrite.RM3(index) >> bm25
     return rm3_pipe
 
@@ -47,7 +47,9 @@ def main(args):
 
     pt.io.write_results(res=results, filename=path, format="trec")
     pt.io.write_results(
-        res=results, filename=path.replace("TREC", "Compressed") + ".res.gz", format="trec"
+        res=results,
+        filename=path.replace("TREC", "Compressed") + ".res.gz",
+        format="trec",
     )
     logger.info("Writing results to %s", path)
 

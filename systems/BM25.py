@@ -27,7 +27,7 @@ def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
     Returns:
         pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
     """
-    bm25 = pt.BatchRetrieve(index, wmodel="BM25").parallel(4)
+    bm25 = pt.BatchRetrieve(index, wmodel="BM25").parallel(6)
     return bm25
 
 
@@ -42,7 +42,9 @@ def main(args):
 
     pt.io.write_results(res=results, filename=path, format="trec")
     pt.io.write_results(
-        res=results, filename=path.replace("TREC", "Compressed") + ".res.gz", format="trec"
+        res=results,
+        filename=path.replace("TREC", "Compressed") + ".res.gz",
+        format="trec",
     )
     logger.info("Writing results to %s", path)
 

@@ -12,7 +12,6 @@ Example:
 
         $ python -m systems.ColBERT_LE --index WT
 """
-import os
 from argparse import ArgumentParser
 from src.exp_logger import logger
 
@@ -31,7 +30,7 @@ def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
     Returns:
         pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
     """
-    BM25 = pt.BatchRetrieve(index, wmodel="BM25")
+    BM25 = pt.BatchRetrieve(index, wmodel="BM25").parallel(6)
 
     colbert_factory = pyterrier_colbert.ranking.ColBERTFactory(
         "data/models/colbert-t1.dnn", None, None
@@ -52,7 +51,9 @@ def main(args):
 
     pt.io.write_results(res=results, filename=path, format="trec")
     pt.io.write_results(
-        res=results, filename=path.replace("TREC", "Compressed") + ".res.gz", format="trec"
+        res=results,
+        filename=path.replace("TREC", "Compressed") + ".res.gz",
+        format="trec",
     )
     logger.info("Writing results to %s", path)
 

@@ -35,6 +35,7 @@ with open("settings.yml", "r") as yamlfile:
 
 letor_logger = get_new_logger("letor")
 caching_logger = get_new_logger("caching")
+caching_logger.setLevel("INFO")
 
 
 class LETOR:
@@ -103,7 +104,9 @@ class LETOR:
         return idf
 
     # query index
-    def prepare_query_index(self, query_path: str) -> Tuple[pd.DataFrame, Dict[int, int]]:
+    def prepare_query_index(
+        self, query_path: str
+    ) -> Tuple[pd.DataFrame, Dict[int, int]]:
         # prepare df
         queries = pt.io.read_topics(query_path)
         queries = queries.reset_index().rename(columns={"index": "docno"})
@@ -173,7 +176,9 @@ class LETOR:
         if self.caching and self.cache:
             features = self.cache.get(str(query_id) + "-" + str(doc_id))
             if features:
-                caching_logger.info(f"Cache hit for query '{query_id}' and doc '{doc_id}'")
+                caching_logger.info(
+                    f"Cache hit for query '{query_id}' and doc '{doc_id}'"
+                )
                 return features
 
         # prepare stats
@@ -329,93 +334,48 @@ def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
     Returns:
         pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
     """
+
     logger.info("Loading LambdaMART model...")
     LambdaMART_pipe = pickle.load(open("data/models/BM25-XGB-LETOR.model", "rb"))
     return LambdaMART_pipe
-
-
-class _f:
-    def __init__(self, letor) -> None:
-        self.letor = letor
-
-    def _features(self, row):
-        docid = row["docid"]
-        queryid = row["qid"]
-        features = row["features"]  # get the features from WMODELs
-        letor_features = self.letor.get_features_letor(queryid, docid)
-        return np.append(features, letor_features)
-
-
-def train_model(index: pt.IndexFactory, topics: pd.DataFrame, qrels: pd.DataFrame, index_name: str):
-    """Train the LambdaMART model with LETOR features and save it to disk. The model is
-    trained on the provided dataset.
-
-    Args:
-        index (pt.IndexFactory): Index of all documents.jnius.JavaException: JVM exception occurred: No Manager implementation found for index /home/juerikeller/dev/LongEval/data/index/index_t1/data.properties (IndexRef) - Do you need to import another package (terrer-core or terrier-rest-client)? Or perhaps the index location is wrong. Found builders were org.terrier.querying.LocalManager$Builder,org.terrier.restclient.RestClientManagerBuilder,org.terrier.querying.ThreadSafeManager$Builder java.lang.IllegalArgumentException
-        topics (pd.DataFrame): The topics to be used for training.
-        qrels (pd.DataFrame): The qrels to be used for training.
-        index_name (str): Name of the index (WT, ST or LT) for the LETOR features.
-    """
-
-    train_topics, validation_topics, test_topics = np.split(
-        topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
-    )
-    train_qrels, validation_qrels, test_qrels = np.split(
-        qrels, [int(0.6 * len(qrels)), int(0.8 * len(qrels))]
-    )
-
-    letor = LETOR(index, query_path=config[index_name]["train"]["topics"])
-    f = _f(letor)
-
-    fbr = pt.FeaturesBatchRetrieve(
-        index,
-        controls={"wmodel": "BM25"},
-        features=[
-            "WMODEL:Tf",
-            "WMODEL:TF_IDF",
-            "WMODEL:BM25",
-        ],
-    ) >> pt.apply.doc_features(f._features)
-
-    lmart_x = xgb.sklearn.XGBRanker(
-        objective="rank:ndcg",
-        learning_rate=0.1,
-        gamma=1.0,
-        min_child_weight=0.1,
-        max_depth=6,
-        verbose=100,
-        random_state=42,
-    )
-
-    logger.info("Training LambdaMART model started...")
-    LambdaMART_pipe = fbr >> pt.ltr.apply_learned_model(lmart_x, form="ltr")
-    LambdaMART_pipe.fit(train_topics, train_qrels, validation_topics, validation_qrels)
-    logger.info("Training LambdaMART model finished.")
-
-    logger.info("Save model to disk...")
-    pickle.dump(
-        LambdaMART_pipe,
-        open("./data/models/BM25-XGB-LETOR.model", "wb"),
-    )
 
 
 def main(args):
     filename = __file__.split("/")[-1]
     path = "results/TREC/IRCologne_" + filename[:-2] + args.index
 
-    index, topics, qrels = setup_system(args.index)
+    index, topics, _ = setup_system(args.index)
+    letor = LETOR(index, query_path=config["WT"]["train"]["topics"])
 
-    if args.train:
-        train_model(index, topics, qrels, args.index)
+    def _features(row):
+        docid = row["docid"]
+        queryid = row["qid"]
+        features = row["features"]  # get the features from WMODELs
+        letor_features = letor.get_features_letor(queryid, docid)
+        return np.append(features, letor_features)
 
     system = get_system(index)
     results = system.transform(topics)
 
     pt.io.write_results(res=results, filename=path, format="trec")
     pt.io.write_results(
-        res=results, filename=path.replace("TREC", "Compressed") + ".res.gz", format="trec"
+        res=results,
+        filename=path.replace("TREC", "Compressed") + ".res.gz",
+        format="trec",
     )
     logger.info("Writing results to %s", path)
+
+
+index, topics, qrels = setup_system("WT")
+letor = LETOR(index, query_path=config["WT"]["train"]["topics"])
+
+
+def _features(row):
+    docid = row["docid"]
+    queryid = row["qid"]
+    features = row["features"]  # get the features from WMODELs
+    letor_features = letor.get_features_letor(queryid, docid)
+    return np.append(features, letor_features)
 
 
 if __name__ == "__main__":
@@ -432,5 +392,52 @@ if __name__ == "__main__":
         action="store_true",
         help="Train the model.",
     )
+    args = parser.parse_args()
 
-    main(parser.parse_args())
+    if args.train:
+        logger.info("Training the model.")
+
+        index, topics, qrels = setup_system(args.index)
+
+        train_topics, validation_topics, test_topics = np.split(
+            topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
+        )
+        train_qrels, validation_qrels, test_qrels = np.split(
+            qrels, [int(0.6 * len(qrels)), int(0.8 * len(qrels))]
+        )
+
+        fbr = pt.FeaturesBatchRetrieve(
+            index,
+            controls={"wmodel": "BM25"},
+            features=[
+                "WMODEL:Tf",
+                "WMODEL:TF_IDF",
+                "WMODEL:BM25",
+            ],
+        ) >> pt.apply.doc_features(_features)
+
+        lmart_x = xgb.sklearn.XGBRanker(
+            objective="rank:ndcg",
+            learning_rate=0.1,
+            gamma=1.0,
+            min_child_weight=0.1,
+            max_depth=6,
+            random_state=42,
+            verbosity=3,
+        )
+
+        logger.info("Training LambdaMART model started...")
+        LambdaMART_pipe = fbr >> pt.ltr.apply_learned_model(lmart_x, form="ltr")
+        LambdaMART_pipe.fit(
+            train_topics, train_qrels, validation_topics, validation_qrels
+        )
+        logger.info("Training LambdaMART model finished.")
+
+        logger.info("Save model to disk...")
+        pickle.dump(
+            LambdaMART_pipe,
+            open("./data/models/BM25-XGB-LETOR.model", "wb"),
+        )
+
+    else:
+        main(args)
