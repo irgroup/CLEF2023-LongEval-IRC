@@ -170,6 +170,76 @@ def merge_passages() -> None:
     logger.info("Saved Triplets")
 
 
+def create_passages_t5(index_name: str) -> None:
+    index, topics, qrels = setup_system(index_name)
+    # Passage creation pipeline
+    pipe = (
+        pt.BatchRetrieve(index, wmodel="BM25", metadata=["docno", "text"])
+        >> pt.text.sliding(length=128, stride=64, prepend_attr=None, text_attr="text")
+        % 1000
+        >> pt.text.scorer(body_attr="text", wmodel="BM25")
+    )
+    for topic in tqdm(topics.iterrows(), total=len(topics)):
+        qid = topic[1]["qid"]
+
+        passages = pipe.transform(topics[topics["qid"] == qid])
+
+        # Add Docno to passages for merging with qrels
+        passages["docno_full"] = passages["docno"].str.split("%").str[0]
+
+        # Merge qrels to passeges
+        passages_graded = passages.merge(
+            qrels, left_on="docno_full", right_on="docno"
+        ).sort_values("score", ascending=False)
+
+        # Create triplets
+        passages_rel = passages_graded[passages_graded["label"] == 1][
+            ["docno_x", "text"]
+        ]
+        passages_not_rel = passages_graded[passages_graded["label"] == 0][
+            ["docno_x", "text"]
+        ]
+
+        min_len = min([len(passages_rel), len(passages_not_rel)])
+
+        triplets = pd.DataFrame(
+            data={
+                "qid": topic[1]["query"],
+                "pid+": passages_rel["text"].to_list()[:min_len],
+                "pid-": passages_not_rel["text"].to_list()[:min_len],
+            }
+        )
+        triplets.to_json(
+            f"data/passages/triplets/t5/{qid}.jsonl", lines=True, orient="records"
+        )
+        # triplets.to_csv(
+        #     f"data/passages/triplets/t5/{qid}.csv", index=False, sep="\t", header=False
+        # )
+
+
+def t5_merge():
+    basedir = "data/passages/triplets/t5/"
+    files = os.listdir(basedir)
+
+    # merge Triplets
+    with open("data/passages/triplets-t5.train.jsonl", "w") as f:
+        for file in files:
+            with open(os.path.join(basedir, file), "r") as fin:
+                lines = fin.readlines()
+                f.writelines(lines)
+
+    logger.info("Merged Triplets")
+
+
+def main(args):
+    if args.t5:
+        create_passages_t5(args.index)
+        t5_merge()
+    else:
+        create_passeges(args.index)
+        merge_passages()
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Create passages from a given index")
 
@@ -181,7 +251,13 @@ if __name__ == "__main__":
         help="Name of the dataset in the config file",
     )
 
+    parser.add_argument(
+        "--t5",
+        required=False,
+        action="store_true",
+        help="t5 format.",
+    )
+
     args = parser.parse_args()
 
-    create_passeges(args.index)
-    merge_passages()
+    main(args)
