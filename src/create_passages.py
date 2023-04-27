@@ -171,6 +171,7 @@ def merge_passages() -> None:
 
 
 def create_passages_t5(index_name: str) -> None:
+    # TODO: add resume
     index, topics, qrels = setup_system(index_name)
     # Passage creation pipeline
     pipe = (

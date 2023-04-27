@@ -15,7 +15,7 @@ import yaml
 with open("settings.yml", "r") as f:
     config = yaml.safe_load(f)
 
-from systems import BM25, BM25_RM3, LambdaMART
+from systems import BM25, BM25_RM3, LambdaMART, BM25_axio, BM25_Bo1
 
 # from systems import ColBERT, ColBERT_LE
 
@@ -42,8 +42,21 @@ def _features(row):
 # systems = [BM25.get_system(index), BM25_RM3.get_system(index)]
 # names = ["IRCologne_BM25.WT", "IRCologne_BM25_RM3.WT"]
 
-systems = [BM25.get_system(index), LambdaMART.get_system(index)]
-names = ["IRCologne_BM25.WT", "IRCologne_LambdaMART.WT"]
+# systems = [BM25.get_system(index), LambdaMART.get_system(index)]
+# names = ["IRCologne_BM25.WT", "IRCologne_LambdaMART.WT"]
+
+systems = [
+    BM25.get_system(index),
+    BM25_axio.get_system(index),
+    BM25_Bo1.get_system(index),
+    BM25_RM3.get_system(index),
+]
+names = [
+    "IRCologne_BM25.WT",
+    "IRCologne_BM25_axio.WT",
+    "IRCologne_BM25_Bo1.WT",
+    "IRCologne_BM25_RM3.WT",
+]
 
 results = pt.Experiment(
     systems,
@@ -58,4 +71,4 @@ results = pt.Experiment(
 )
 
 print(results)
-results.to_csv("results/results-t1-.csv")
+results.to_csv("results/results-t1-BM25.csv")
