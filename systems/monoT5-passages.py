@@ -7,7 +7,12 @@ This system uses the monoT5 reranker and a BM25 first stage ranker.
 Example:
     Run the system with the following command::
 
-        $ python -m systems.monoT5 --index WT
+        $ python -m systems.monoT5-passages --index WT
+        $ python -m systems.monoT5-passages --index WT
+        $ python -m systems.monoT5-passages --index WT --model monoT5-MS-WT
+        $ python -m systems.monoT5-passages --index WT --model monoT5-MS-WT-train
+        $ python -m systems.monoT5-passages --index WT --model monoT5-WT
+        $ python -m systems.monoT5-passages --index WT --model monoT5-WT-train
 """
 from argparse import ArgumentParser
 from src.exp_logger import logger
@@ -27,6 +32,7 @@ with open("settings.yml", "r") as yamlfile:
 
 def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve:
     if model_path:
+        model_path = "data/models/" + model_path
         monoT5 = MonoT5ReRanker(verbose=True, batch_size=8, model=model_path)
     else:
         monoT5 = MonoT5ReRanker(verbose=True, batch_size=8)
@@ -47,7 +53,7 @@ def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve
 
 
 def main(args):
-    name = "BM25+" + args.model
+    name = "BM25+" + args.model if args.model else "monoT5"
     run_tag = tag(name, args.index)
 
     index, topics, _ = setup_system(args.index)
@@ -71,7 +77,7 @@ def main(args):
                     "2": {
                         "name": "monoT5 reranker",
                         "method": "pyterrier_t5",
-                        "model": args.model,
+                        "model": args.model if args.model else "monoT5" ,
                     },
                 },
             },
@@ -90,16 +96,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        required=True,
-        help="Name of the finetuned t5 model to use.",
-    )
-    parser.add_argument(
-        "--train",
         required=False,
-        action="store_true",
-        help="Use the model that was trained only on the train split.",
+        help="Name of the finetuned t5 model to use.",
     )
 
     main(parser.parse_args())
-
-# python -m systems.monoT5 --index WT --data/models/monoT5-MS-WT/train/monoT5-MS-WT-train --train
