@@ -10,6 +10,8 @@ import yaml  # type: ignore
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
+TEAM = config["team"]
+
 
 def load_index(index_name: str) -> pt.IndexFactory:
     """Load an index from disk.
@@ -50,3 +52,8 @@ def setup_system(
     topics = pt.io.read_topics(config[index_name][split]["topics"])
     qrels = pt.io.read_qrels(config[index_name][split]["qrels"])
     return index, topics, qrels
+
+
+def tag(system: str, index: str) -> str:
+    """Create a tag for the run."""
+    return f"{TEAM}-{system}.{index}"

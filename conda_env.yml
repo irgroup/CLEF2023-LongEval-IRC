@@ -3,11 +3,13 @@ dependencies:
   - python=3.8
   - ipykernel
   - pandas=1.5.3
+  - seaborn
   - pip:
-    - tqdm
-    - transformers==3.0.2
-    - python-terrier
-    - git+https://github.com/terrier-org/pyterrier.git#egg=python-terrier
-    - git+https://github.com/terrierteam/pyterrier_colbert
-    - xgboost
-    - faiss-gpu==1.6.3
+      - tqdm
+      - transformers==3.0.2
+      - python-terrier
+      - git+https://github.com/terrier-org/pyterrier.git#egg=python-terrier
+      - git+https://github.com/terrierteam/pyterrier_colbert
+      - xgboost
+      - faiss-gpu==1.6.3
+      - ranx

@@ -6,5 +6,107 @@ WT:
     qrels: "data/publish/French/Qrels/train.txt"
   test:
     topics: "data/publish/English/Queries/heldout.trec"
+
+results_path: "results/trec/"
+metadata_path: "results/metadata/"
 index_dir: "./data/index/"
 JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
+
+top_runs:
+  - "q062210095"
+  - "q062211015"
+  - "q062211059"
+  - "q062211077"
+  - "q062212365"
+  - "q062212370"
+  - "q062212372"
+  - "q06221312"
+  - "q06221322"
+  - "q062214356"
+  - "q062214358"
+  - "q062214371"
+  - "q062214657"
+  - "q06221468"
+  - "q062214880"
+  - "q062215139"
+  - "q062216054"
+  - "q062217064"
+  - "q062217180"
+  - "q062218216"
+  - "q062218248"
+  - "q062218796"
+  - "q062219010"
+  - "q062219091"
+  - "q062219963"
+  - "q062220046"
+  - "q062220280"
+  - "q06222030"
+  - "q062220463"
+  - "q062220595"
+  - "q062220605"
+  - "q062220819"
+  - "q062221161"
+  - "q062222854"
+  - "q062223273"
+  - "q062223882"
+  - "q062223900"
+  - "q062223911"
+  - "q062224086"
+  - "q062224420"
+  - "q062224542"
+  - "q062224650"
+  - "q062224851"
+  - "q06222625"
+  - "q06223261"
+  - "q06223284"
+  - "q06223841"
+  - "q06223885"
+  - "q06223943"
+  - "q06224496"
+  - "q06224934"
+  - "q06225642"
+  - "q06225977"
+  - "q06226133"
+  - "q0622699"
+  - "q06227087"
+  - "q06227796"
+  - "q06228125"
+  - "q0622818"
+  - "q06228236"
+  - "q06228353"
+  - "q06228425"
+  - "q06228611"
+  - "q06228988"
+  - "q06229333"
+  - "q06229341"
+  - "q06229483"
+  - "q06229532"
+  - "q06229906"
+
+metadata:
+  "research goal":
+    venue:
+      name: "CLEF"
+      year: 2023
+  method:
+    indexing:
+      "stemmer": "PorterStemmer"
+      "stopwords": "removed"
+  actor:
+    name: Jueri Keller
+    orcid: 0000-0002-9392-8646
+    team: IRCologne
+    mail: jueri.keller@smail.th-koeln.de
+    role: experimenter
+    degree: B.Sc
+    github: https://github.com/jueri
+    twitter: https://twitter.com/juerikeller
+  data:
+    test collection:
+      name: LongEval Train Collection
+      source: https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-5010
+    training collection:
+      name: LongEval Train Collection
+      source: https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-5010
+
+team: IRC

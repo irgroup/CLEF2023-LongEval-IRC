@@ -86,11 +86,12 @@ def create_features(index: pt.IndexFactory, topics: pd.DataFrame):
 
 
 def load_features(index_name: str, split: str):
-    features = []
+    features = {}
     with open(f"data/use/{split}_USE_{index_name}.jsonl") as file:
+        id_name = "qid" if split == "query" else "docno"
         for line in file.readlines():
             sample = json.loads(line)
-            features.append(sample)
+            features[sample[id_name]] = sample["use"]
     return features
 
 
@@ -114,8 +115,15 @@ def train(
         queryid = row["qid"]
         features = row["features"]  # get the features from WMODELs
 
+        embeddings_query = query_features.get(queryid, np.zeros(512))
+        embeddings_doc = docs_features.get(docid, np.zeros(512))
+        if not sum(embeddings_query):
+            logger.info(f"Missing query embeddings for {queryid}")
+        if not sum(embeddings_doc):
+            logger.info(f"Missing doc embeddings for {docid}")
+        embeddings = np.append(embeddings_query, embeddings_doc)
         # letor_features = letor.get_features_letor(queryid, docid)
-        return np.append(features, query_features[queryid], docs_features[docid])
+        return np.append(features, embeddings)
 
     fbr = pt.FeaturesBatchRetrieve(
         index,

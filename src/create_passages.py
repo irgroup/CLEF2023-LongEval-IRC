@@ -176,7 +176,7 @@ def create_passages_t5(index_name: str) -> None:
     # Passage creation pipeline
     pipe = (
         pt.BatchRetrieve(index, wmodel="BM25", metadata=["docno", "text"])
-        >> pt.text.sliding(length=128, stride=64, prepend_attr=None, text_attr="text")
+        >> pt.text.sliding(length=512, stride=256, prepend_attr=None, text_attr="text")
         % 1000
         >> pt.text.scorer(body_attr="text", wmodel="BM25")
     )
