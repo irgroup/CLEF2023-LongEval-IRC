@@ -25,8 +25,11 @@ with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 
-def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
-    monoT5 = MonoT5ReRanker(verbose=True, batch_size=8)
+def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve:
+    if model_path:
+        monoT5 = MonoT5ReRanker(verbose=True, batch_size=8, model=model_path)
+    else:
+        monoT5 = MonoT5ReRanker(verbose=True, batch_size=8)
 
     bm25 = pt.BatchRetrieve(
         index, wmodel="BM25", verbose=True, metadata=["docno", "text"]
@@ -49,7 +52,7 @@ def main(args):
 
     index, topics, _ = setup_system(args.index)
 
-    monoT5 = get_system(index)
+    monoT5 = get_system(index, args.model)
 
     pt.io.write_results(monoT5(topics), config["results_path"] + run_tag)
     write_metadata_yaml(
@@ -92,7 +95,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--train",
-        type=bool,
         required=False,
         action="store_true",
         help="Use the model that was trained only on the train split.",
@@ -100,4 +102,4 @@ if __name__ == "__main__":
 
     main(parser.parse_args())
 
-# python -m systems.monoT5 --index WT
+# python -m systems.monoT5 --index WT --data/models/monoT5-MS-WT/train/monoT5-MS-WT-train --train
