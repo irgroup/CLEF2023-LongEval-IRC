@@ -2,6 +2,7 @@ import os
 from typing import Tuple
 
 import pandas as pd  # type: ignore
+import numpy as np 
 from src.exp_logger import logger  # type: ignore
 
 import pyterrier as pt  # type: ignore
@@ -9,8 +10,6 @@ import yaml  # type: ignore
 
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
-
-TEAM = config["team"]
 
 
 def load_index(index_name: str) -> pt.IndexFactory:
@@ -50,10 +49,34 @@ def setup_system(
 
     index = load_index(config[index_name]["index_name"])
     topics = pt.io.read_topics(config[index_name][split]["topics"])
-    qrels = pt.io.read_qrels(config[index_name][split]["qrels"])
+    if train:
+        qrels = pt.io.read_qrels(config[index_name][split]["qrels"])
+    else:
+        qrels = None
     return index, topics, qrels
 
 
 def tag(system: str, index: str) -> str:
     """Create a tag for the run."""
-    return f"{TEAM}-{system}.{index}"
+    team = config["team"]
+    return f"{team}-{system}.{index}"
+
+
+def get_train_splits(topics, qrels):
+    def filter_ids(topics):
+        needed_ids = list(topics["qid"].unique())  # needed ids
+        qrels_split = qrels[qrels["qid"].isin(needed_ids)]
+        diff = len(needed_ids) - len(qrels_split["qid"].unique())
+        return qrels_split
+    
+    # split topics
+    train_topics, validation_topics, test_topics = np.split(
+        topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
+    )
+
+    # split qrels
+    train_qrels = filter_ids(train_topics)
+    validation_qrels = filter_ids(validation_topics)
+    test_qrels = filter_ids(test_topics)
+
+    return train_topics, validation_topics, test_topics, train_qrels, validation_qrels, test_qrels

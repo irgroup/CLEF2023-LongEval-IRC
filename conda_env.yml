@@ -13,3 +13,4 @@ dependencies:
       - xgboost
       - faiss-gpu==1.6.3
       - ranx
+      - lightgbm

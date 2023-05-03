@@ -3,7 +3,11 @@
 """BM25 baseline systems including pseudo relevance feedback and rank fusion.
 
 Example:
-    Run the system with the following command::
+    Create runs on the train topics of the given index::
+
+        $ python -m systems.BM25 --index WT --train
+    
+    Create runs on the test topics of the given index::
 
         $ python -m systems.BM25 --index WT
 """
@@ -24,7 +28,7 @@ metadata_path = "results/metadata/"
 
 
 def main(args):
-    index, topics, _ = setup_system(args.index)
+    index, topics, _ = setup_system(args.index, train=args.train)
 
     # BM25
     run_tag = tag("BM25", args.index)
@@ -397,5 +401,12 @@ if __name__ == "__main__":
         required=True,
         help="Name of the dataset in the config file (WT, ST or LT)",
     )
+    parser.add_argument(
+        "--train",
+        required=False,
+        action="store_true",
+        help="Use the train topics to create the.",
+    )
 
-    main(parser.parse_args())
+    args = parser.parse_args()
+    main(args)

@@ -1,22 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""LambdaMART System for LongEval 2023.
-
-This system uses BM25 as a first stage ranker and LambdaMART as a second stage re-ranker.
-The LambdaMART uses the XGBoost model and the LETOR features and was trained on the LongEval WT dataset.
+"""LambdaMART systems trained on LETOR and USE Embeddings.
 
 Example:
-    Run the system with the following command::
+    Train a system on the train slice of the train topics and create a run on the test slice of the train topics ::
 
-        $ python -m systems.LambdaMART --index WT
+        $ python -m systems.LambdaMART-XGB_LETOR_USE --index WT  --train
     
-    Train the model with the following command::
+    Train a system on the train slice of the train topics and create a run on the test topics (submission run) ::
 
-        $ python -m systems.LambdaMART --index WT --train 
+        $ python -m systems.LambdaMART-XGB_LETOR_USE --index WT
 """
 import json
 import os
-import pickle
 from argparse import ArgumentParser
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from src.exp_logger import logger, get_new_logger  # type: ignore
@@ -27,16 +23,14 @@ import pyterrier as pt  # type: ignore
 import yaml  # type: ignore
 import xgboost as xgb
 
-from src.load_index import setup_system
+from src.load_index import setup_system, tag, get_train_splits
+from src.metadata import write_metadata_yaml
 
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
-
 letor_logger = get_new_logger("letor")
 caching_logger = get_new_logger("caching")
-caching_logger.setLevel("INFO")
-
 
 class LETOR:
     def __init__(
@@ -118,8 +112,6 @@ class LETOR:
         return queries, qid_to_docno
 
     def index_queries(self, queries: pd.DataFrame) -> pt.index:
-        # pd_indexer = pt.DFIndexer("./tmp", type=pt.IndexingType.MEMORY)
-        # indexref2 = pd_indexer.index(queries["query"], queries["docno"], queries["qid"])
         queries = queries.rename(columns={"query": "text"})
         iter_indexer = pt.IterDictIndexer(
             "./tmp", type=pt.IndexingType.MEMORY, meta={"docno": 20, "text": 4096}
@@ -213,22 +205,6 @@ class LETOR:
             np.var(tf_idfs),
             # bool
             self.boolean_model_96(query_id, doc_id),
-            # vector_space_model_101 (log)
-            # BM25_106
-            # LMIRABS_111
-            # LMIRACLM_116
-            # LMIRADIR_121
-            # Number of slash in URL
-            # Length of URL
-            # Inlink number
-            # Outlink number
-            # PageRank
-            # SiteRank
-            # QualityScore
-            # QualityScore2
-            # Query-url click count
-            # url click count
-            # url dwell time
         ]
         if self.caching:
             caching_logger.info(f"Cache features for '{query_id}-{doc_id}'")
@@ -325,123 +301,136 @@ class LETOR:
             return 0
 
 
-def get_system(index: pt.IndexFactory) -> pt.BatchRetrieve:
-    """Return the system as a pyterrier BatchRetrieve object.
+def load_use_features(index_name: str, split: str):
+    features = {}
+    with open(f"data/use/{split}_USE_{index_name}.jsonl") as file:
+        id_name = "qid" if split == "query" else "docno"
+        for line in file.readlines():
+            sample = json.loads(line)
+            features[sample[id_name]] = sample["use"]
+    return features
 
-    Args:
-        index (pt.IndexFactory): The index to be used in the system.
-
-    Returns:
-        pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
-    """
-
-    logger.info("Loading LambdaMART model...")
-    LambdaMART_pipe = pickle.load(open("data/models/BM25-XGB-LETOR.model", "rb"))
-    return LambdaMART_pipe
 
 
 def main(args):
-    filename = __file__.split("/")[-1]
-    path = "results/TREC/IRCologne_LambdaMART." + args.index
+    # Data for training (load train topics anyway)
+    index, topics, qrels = setup_system(args.index, tain=True)
 
-    index, topics, _ = setup_system(args.index)
-    train_topics, validation_topics, test_topics = np.split(
-        topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
-    )
-    letor = LETOR(index, query_path=config["WT"]["train"]["topics"])
+    # Get qrels
+    train_topics, validation_topics, _, train_qrels, validation_qrels, _ = get_train_splits(topics, qrels)
+
+    # Get features
+    letor = LETOR(index, query_path=config[args.index]["train"]["topics"])
+    query_features = load_use_features(args.index, "query")
+    docs_features = load_use_features(args.index, "docs")
+
 
     def _features(row):
         docid = row["docid"]
         queryid = row["qid"]
         features = row["features"]  # get the features from WMODELs
+
+        # LETOR Features
         letor_features = letor.get_features_letor(queryid, docid)
-        return np.append(features, letor_features)
 
-    system = get_system(index)
-    results = system(test_topics)
+        # USE Features
+        embeddings_query = query_features.get(queryid, np.zeros(512))
+        embeddings_doc = docs_features.get(docid, np.zeros(512))
+        if not sum(embeddings_query):
+            logger.info(f"Missing query embeddings for {queryid}")
+        if not sum(embeddings_doc):
+            logger.info(f"Missing doc embeddings for {docid}")
 
-    pt.io.write_results(res=results, filename=path, format="trec")
-    pt.io.write_results(
-        res=results,
-        filename=path.replace("TREC", "Compressed") + ".res.gz",
-        format="trec",
+        # Merge features
+        embeddings = np.append(embeddings_query, embeddings_doc)
+
+        new_features = np.append(letor_features, embeddings)
+
+        return np.append(features, new_features)
+
+
+    fbr = pt.FeaturesBatchRetrieve(
+        index,
+        controls={"wmodel": "BM25"},
+        features=[
+            "WMODEL:Tf",
+            "WMODEL:TF_IDF",
+            "WMODEL:BM25",
+        ],
+    ) >> pt.apply.doc_features(_features)
+
+    lmart_x = xgb.sklearn.XGBRanker(
+        objective="rank:ndcg",
+        learning_rate=0.1,
+        gamma=1.0,
+        min_child_weight=0.1,
+        max_depth=6,
+        random_state=42,
+        verbosity=3,
     )
-    logger.info("Writing results to %s", path)
+
+    LambdaMART_pipe = fbr >> pt.ltr.apply_learned_model(lmart_x, form="ltr")
+    LambdaMART_pipe.fit(
+        train_topics, train_qrels, validation_topics, validation_qrels
+    )
 
 
-index, topics, qrels = setup_system("WT")
-letor = LETOR(index, query_path=config["WT"]["train"]["topics"])
+    # Create Run
+    if args.train:
+        # reuse the train topics
+        run_tag = tag("BM25+LambdaMART_XGB_LETOR_USE-train", "WT")
+    else:
+        # use the test topics
+        _, topics, _ = setup_system(args.index, train=False)
+        run_tag = tag("BM25+LambdaMART_XGB_LETOR_USE", "WT")  
 
-
-def _features(row):
-    docid = row["docid"]
-    queryid = row["qid"]
-    features = row["features"]  # get the features from WMODELs
-    letor_features = letor.get_features_letor(queryid, docid)
-    return np.append(features, letor_features)
+    pt.io.write_results(LambdaMART_pipe(topics), config["results_path"] + run_tag)
+    write_metadata_yaml(
+        config["metadata_path"] + run_tag + ".yml",
+        {
+            "tag": run_tag,
+            "method": {
+                "retrieval": {
+                    "1": {
+                        "name": "bm25",
+                        "method": "org.terrier.matching.models.BM25",
+                        "k_1": "1.2",
+                        "k_3": "8",
+                        "b": "0.75",
+                    },
+                    "2": {
+                        "name": "LambdaMART Reranker",
+                        "method": "xgboost.sklearn.XGBRanker",
+                        "objective": "rank:ndcg",
+                        "learning_rate": 0.1,
+                        "gamma": 1.0,
+                        "min_child_weight": 0.1,
+                        "max_depth": 6,
+                        "random_state": 42,
+                        "reranks": "bm25",
+                    },
+                },
+            },
+        },
+    )
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Create an pyterrier index from a config.")
+    caching_logger.setLevel("WARNING")
+
+    parser = ArgumentParser(description="Run BM25+LambdaMART_XGB_LETOR_USE")
     parser.add_argument(
         "--index",
         type=str,
-        required=True,
-        help="Name of the dataset in the config file (WT, ST or LT)",
+        default="WT",
+        help="Name of the index to be used.",
     )
     parser.add_argument(
         "--train",
         required=False,
         action="store_true",
-        help="Train the model.",
+        help="Use the train topics to create the.",
     )
+
     args = parser.parse_args()
-
-    if args.train:
-        logger.info("Training the model.")
-
-        index, topics, qrels = setup_system(args.index)
-
-        train_topics, validation_topics, test_topics = np.split(
-            topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
-        )
-        train_qrels, validation_qrels, test_qrels = np.split(
-            qrels, [int(0.6 * len(qrels)), int(0.8 * len(qrels))]
-        )
-
-        fbr = pt.FeaturesBatchRetrieve(
-            index,
-            controls={"wmodel": "BM25"},
-            features=[
-                "WMODEL:Tf",
-                "WMODEL:TF_IDF",
-                "WMODEL:BM25",
-            ],
-        ) >> pt.apply.doc_features(_features)
-
-        lmart_x = xgb.sklearn.XGBRanker(
-            objective="rank:ndcg",
-            learning_rate=0.1,
-            gamma=1.0,
-            min_child_weight=0.1,
-            max_depth=6,
-            random_state=42,
-            verbosity=3,
-        )
-
-        logger.info("Training LambdaMART model started...")
-        LambdaMART_pipe = fbr >> pt.ltr.apply_learned_model(lmart_x, form="ltr")
-
-        LambdaMART_pipe.fit(
-            train_topics, train_qrels, validation_topics, validation_qrels
-        )
-        logger.info("Training LambdaMART model finished.")
-
-        logger.info("Save model to disk...")
-        pickle.dump(
-            LambdaMART_pipe,
-            open("./data/models/BM25-XGB-LETOR.model", "wb"),
-        )
-
-    else:
-        main(args)
+    main(args)
