@@ -32,12 +32,12 @@ with open("settings.yml", "r") as yamlfile:
 letor_logger = get_new_logger("letor")
 caching_logger = get_new_logger("caching")
 
-
 class LETOR:
     def __init__(
         self,
         index,
         query_path: str,
+        url_path: str,
         caching: bool = True,
         cache_dir: str = "data/cache.jsonl",
     ) -> None:
@@ -48,6 +48,9 @@ class LETOR:
         self.doc_di = index.getDirectIndex()
         self.doc_doi = index.getDocumentIndex()
         self.doc_lex = index.getLexicon()
+
+        # urls
+        self.urls = self.load_urls(url_path)
 
         # Query index
         self.queries, self.qid_to_docno = self.prepare_query_index(query_path)
@@ -62,6 +65,16 @@ class LETOR:
         self.caching = caching
         self.cache_dir = cache_dir
         self.cache = self.load_cache()
+
+
+    def load_urls(self, url_path: str) -> pd.DataFrame:
+        urls = {}
+        with open(url_path, "r") as f:
+            for line in f:
+                docno, url = line.strip().split("\t")
+                urls[docno] = url
+        return urls
+    
 
     def load_cache(self) -> Optional[Dict[str, List[Any]]]:
         if os.path.exists(self.cache_dir):
@@ -165,7 +178,7 @@ class LETOR:
         return tf_idf if tf_idf else [0]
 
     ############## Feature API ##############
-    def get_features_letor(self, query_id: int, doc_id: int) -> List[Union[int, float]]:
+    def get_features_letor(self, query_id: int, doc_id: int, docno: str) -> List[Union[int, float]]:
         if self.caching and self.cache:
             features = self.cache.get(str(query_id) + "-" + str(doc_id))
             if features:
@@ -206,6 +219,10 @@ class LETOR:
             np.var(tf_idfs),
             # bool
             self.boolean_model_96(query_id, doc_id),
+            # url
+            self.number_of_slash_in_url_126(docno),
+            self.length_of_url_127(docno)
+
         ]
         if self.caching:
             caching_logger.info(f"Cache features for '{query_id}-{doc_id}'")
@@ -300,6 +317,34 @@ class LETOR:
             return 1
         else:
             return 0
+    
+    def number_of_slash_in_url_126(self, docno) -> int:
+        """Number of slashes in the URL.
+
+        Args:
+            query_id (int): Id of the query.
+            doc_id (int): Id of the document.
+
+        Returns:
+            int: number of slashes in the URL.
+        """
+        url = self.urls[docno]
+        number_of_slash_in_url = url.count("/")
+        return number_of_slash_in_url
+    
+    def length_of_url_127(self, docno) -> int:
+        """Length of the URL.
+
+        Args:
+            query_id (int): Id of the query.
+            doc_id (int): Id of the document.
+
+        Returns:
+            int: length of the URL.
+        """
+        url = self.urls[docno]
+        length_of_url = len(url)
+        return length_of_url
 
 
 def main(args):
@@ -307,27 +352,23 @@ def main(args):
     index, topics, qrels = setup_system(args.index, train=True)
 
     # Get qrels
-    (
-        train_topics,
-        validation_topics,
-        _,
-        train_qrels,
-        validation_qrels,
-        _,
-    ) = get_train_splits(topics, qrels)
+    train_topics, validation_topics, _, train_qrels, validation_qrels, _ = get_train_splits(topics, qrels)
 
     # Get features
-    letor = LETOR(index, query_path=config[args.index]["train"]["topics"])
+    letor = LETOR(index, query_path=config[args.index]["train"]["topics"], url_path = config[args.index]["urls"])
+
 
     def _features(row):
         docid = row["docid"]
         queryid = row["qid"]
         features = row["features"]  # get the features from WMODELs
+        docno = row["docno"]
 
         # LETOR Features
-        letor_features = letor.get_features_letor(queryid, docid)
+        letor_features = letor.get_features_letor(queryid, docid, docno)
 
         return np.append(features, letor_features)
+
 
     fbr = pt.FeaturesBatchRetrieve(
         index,
@@ -339,8 +380,7 @@ def main(args):
         ],
     ) >> pt.apply.doc_features(_features)
 
-    lmart_l = lgb.LGBMRanker(
-        task="train",
+    lmart_l = lgb.LGBMRanker(task="train",
         min_data_in_leaf=1,
         min_sum_hessian_in_leaf=100,
         max_bin=255,
@@ -348,13 +388,13 @@ def main(args):
         objective="lambdarank",
         metric="ndcg",
         ndcg_eval_at=[1, 3, 5, 10],
-        learning_rate=0.1,
+        learning_rate= .1,
         importance_type="gain",
-        num_iterations=10,
-    )
-
+        num_iterations=10)
+    
     lmart_l_pipe = fbr >> pt.ltr.apply_learned_model(lmart_l, form="ltr")
     lmart_l_pipe.fit(train_topics, train_qrels, validation_topics, validation_qrels)
+
 
     # Create Run
     if args.train:
@@ -363,7 +403,7 @@ def main(args):
     else:
         # use the test topics
         _, topics, _ = setup_system(args.index, train=False)
-        run_tag = tag("BM25+LambdaMART_LGB_LETOR", "WT")
+        run_tag = tag("BM25+LambdaMART_LGB_LETOR", "WT")  
 
     pt.io.write_results(lmart_l_pipe(topics), config["results_path"] + run_tag)
     write_metadata_yaml(
@@ -389,9 +429,9 @@ def main(args):
                         "objective": "lambdarank",
                         "metric": "ndcg",
                         "ndcg_eval_at": [1, 3, 5, 10],
-                        "learning_rate": 0.1,
-                        "importance_type": "gain",
-                        "num_iterations": 10,
+                        "learning_rate": .1,
+                        "importance_type":"gain",
+                        "num_iterations":10,
                         "reranks": "bm25",
                     },
                 },
@@ -401,7 +441,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    caching_logger.setLevel("WARNING")
+    caching_logger.setLevel("INFO")
 
     parser = ArgumentParser(description="Run BM25+LambdaMART_LGB_LETOR")
     parser.add_argument(
