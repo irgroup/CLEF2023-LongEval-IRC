@@ -1,11 +1,25 @@
 WT:
   index_name: "index_WT"
   docs: "data/publish/English/Documents/Trec/"
+  urls: "data/publish/French/urls.txt"
   train:
     topics: "data/publish/English/Queries/train.trec"
     qrels: "data/publish/French/Qrels/train.txt"
   test:
     topics: "data/publish/English/Queries/heldout.trec"
+ST:
+  index_name: "index_ST"
+  docs: "data/test-collection/A-Short-July/English/Documents/Trec/"
+  urls: "data/test-collection/A-Short-July/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/A-Short-July/English/Queries/test07.trec"
+LT:
+  index_name: "index_LT"
+  docs: "data/test-collection/B-Long-September/English/Documents/Trec/"
+  urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
+
 
 results_path: "results/trec/"
 metadata_path: "results/metadata/"
