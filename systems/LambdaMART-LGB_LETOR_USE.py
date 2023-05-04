@@ -32,6 +32,7 @@ with open("settings.yml", "r") as yamlfile:
 letor_logger = get_new_logger("letor")
 caching_logger = get_new_logger("caching")
 
+
 class LETOR:
     def __init__(
         self,
@@ -311,22 +312,28 @@ def load_use_features(index_name: str, split: str):
     return features
 
 
-
 def main(args):
     # Data for training (load train topics anyway)
-    index, topics, qrels = setup_system(args.index, tain=True)
+    index, topics, qrels = setup_system(args.index, train=True)
 
     # Get qrels
-    train_topics, validation_topics, _, train_qrels, validation_qrels, _ = get_train_splits(topics, qrels)
+    (
+        train_topics,
+        validation_topics,
+        _,
+        train_qrels,
+        validation_qrels,
+        _,
+    ) = get_train_splits(topics, qrels)
 
     # Get features
     letor = LETOR(index, query_path=config[args.index]["train"]["topics"])
     query_features = load_use_features(args.index, "query")
     docs_features = load_use_features(args.index, "docs")
 
-
     def _features(row):
         docid = row["docid"]
+        docno = row["docno"]
         queryid = row["qid"]
         features = row["features"]  # get the features from WMODELs
 
@@ -335,11 +342,11 @@ def main(args):
 
         # USE Features
         embeddings_query = query_features.get(queryid, np.zeros(512))
-        embeddings_doc = docs_features.get(docid, np.zeros(512))
+        embeddings_doc = docs_features.get(docno, np.zeros(512))
         if not sum(embeddings_query):
-            logger.info(f"Missing query embeddings for {queryid}")
+            logger.warning(f"Missing query embeddings for {queryid}")
         if not sum(embeddings_doc):
-            logger.info(f"Missing doc embeddings for {docid}")
+            logger.warning(f"Missing doc embeddings for {docno}")
 
         # Merge features
         embeddings = np.append(embeddings_query, embeddings_doc)
@@ -347,7 +354,6 @@ def main(args):
         new_features = np.append(letor_features, embeddings)
 
         return np.append(features, new_features)
-
 
     fbr = pt.FeaturesBatchRetrieve(
         index,
@@ -359,7 +365,8 @@ def main(args):
         ],
     ) >> pt.apply.doc_features(_features)
 
-    lmart_l = lgb.LGBMRanker(task="train",
+    lmart_l = lgb.LGBMRanker(
+        task="train",
         min_data_in_leaf=1,
         min_sum_hessian_in_leaf=100,
         max_bin=255,
@@ -367,13 +374,13 @@ def main(args):
         objective="lambdarank",
         metric="ndcg",
         ndcg_eval_at=[1, 3, 5, 10],
-        learning_rate= .1,
+        learning_rate=0.1,
         importance_type="gain",
-        num_iterations=10)
-    
+        num_iterations=10,
+    )
+
     lmart_l_pipe = fbr >> pt.ltr.apply_learned_model(lmart_l, form="ltr")
     lmart_l_pipe.fit(train_topics, train_qrels, validation_topics, validation_qrels)
-
 
     # Create Run
     if args.train:
@@ -382,7 +389,7 @@ def main(args):
     else:
         # use the test topics
         _, topics, _ = setup_system(args.index, train=False)
-        run_tag = tag("BM25+LambdaMART_LGB_LETOR_USE", "WT")  
+        run_tag = tag("BM25+LambdaMART_LGB_LETOR_USE", "WT")
 
     pt.io.write_results(lmart_l_pipe(topics), config["results_path"] + run_tag)
     write_metadata_yaml(
@@ -408,9 +415,9 @@ def main(args):
                         "objective": "lambdarank",
                         "metric": "ndcg",
                         "ndcg_eval_at": [1, 3, 5, 10],
-                        "learning_rate": .1,
-                        "importance_type":"gain",
-                        "num_iterations":10,
+                        "learning_rate": 0.1,
+                        "importance_type": "gain",
+                        "num_iterations": 10,
                         "reranks": "bm25",
                     },
                 },

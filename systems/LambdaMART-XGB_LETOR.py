@@ -32,6 +32,7 @@ with open("settings.yml", "r") as yamlfile:
 letor_logger = get_new_logger("letor")
 caching_logger = get_new_logger("caching")
 
+
 class LETOR:
     def __init__(
         self,
@@ -303,14 +304,20 @@ class LETOR:
 
 def main(args):
     # Data for training (load train topics anyway)
-    index, topics, qrels = setup_system(args.index, tain=True)
+    index, topics, qrels = setup_system(args.index, train=True)
 
     # Get qrels
-    train_topics, validation_topics, _, train_qrels, validation_qrels, _ = get_train_splits(topics, qrels)
+    (
+        train_topics,
+        validation_topics,
+        _,
+        train_qrels,
+        validation_qrels,
+        _,
+    ) = get_train_splits(topics, qrels)
 
     # Get features
     letor = LETOR(index, query_path=config[args.index]["train"]["topics"])
-
 
     def _features(row):
         docid = row["docid"]
@@ -321,7 +328,6 @@ def main(args):
         letor_features = letor.get_features_letor(queryid, docid)
 
         return np.append(features, letor_features)
-
 
     fbr = pt.FeaturesBatchRetrieve(
         index,
@@ -344,10 +350,7 @@ def main(args):
     )
 
     LambdaMART_pipe = fbr >> pt.ltr.apply_learned_model(lmart_x, form="ltr")
-    LambdaMART_pipe.fit(
-        train_topics, train_qrels, validation_topics, validation_qrels
-    )
-
+    LambdaMART_pipe.fit(train_topics, train_qrels, validation_topics, validation_qrels)
 
     # Create Run
     if args.train:
@@ -356,7 +359,7 @@ def main(args):
     else:
         # use the test topics
         _, topics, _ = setup_system(args.index, train=False)
-        run_tag = tag("BM25+LambdaMART_XGB_LETOR", "WT")  
+        run_tag = tag("BM25+LambdaMART_XGB_LETOR", "WT")
 
     pt.io.write_results(LambdaMART_pipe(topics), config["results_path"] + run_tag)
     write_metadata_yaml(
