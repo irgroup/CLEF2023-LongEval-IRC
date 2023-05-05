@@ -43,8 +43,8 @@ def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve
 
     t5_window = pt.text.sliding(
         text_attr="text",
-        length=64,
-        stride=32,
+        length=150,
+        stride=75,
         prepend_attr=None,
     )
     mono_pipeline = bm25 >> t5_window >> monoT5 >> pt.text.max_passage()
@@ -54,7 +54,7 @@ def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve
 
 def main(args):
     name = "BM25+" + args.model if args.model else "monoT5"
-    run_tag = tag(name, args.index)
+    run_tag = tag(name+"_64", args.index)
 
     index, topics, _ = setup_system(args.index)
 
@@ -78,6 +78,8 @@ def main(args):
                         "name": "monoT5 reranker",
                         "method": "pyterrier_t5",
                         "model": args.model if args.model else "monoT5" ,
+                        "passages": 150,
+                        "stride": 75
                     },
                 },
             },
