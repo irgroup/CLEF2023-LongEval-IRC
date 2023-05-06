@@ -277,7 +277,7 @@ def main(args):
     baseline_ranx.name = "BM25"
 
     runs = []
-    runs.append(Run.from_file("results/trec/IRC-BM25+RM3." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC-BM25+RM3_opt." + args.index, kind="trec"))
     runs.append(Run.from_file("results/trec/IRC-XSqrA_M." + args.index, kind="trec"))
     runs.append(Run.from_file("results/trec/IRC-PL2." + args.index, kind="trec"))
 
