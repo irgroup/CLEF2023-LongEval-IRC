@@ -16,6 +16,7 @@ import yaml  # type: ignore
 
 from src.exp_logger import logger  # type: ignore
 import pyterrier as pt  # type: ignore
+import pyterrier_doc2query
 
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
@@ -48,6 +49,44 @@ def create_index(index_name: str) -> pt.IndexFactory:
     return index
 
 
+def create_index_d2q(index_name: str) -> pt.IndexFactory:
+    index_location = config["index_dir"] + config[index_name]["index_name"] + "_d2q"
+    documents_path = config[index_name]["docs"]
+
+    doc2query = pyterrier_doc2query.Doc2Query(append=True, verbose=True) # append generated queries to the orignal document text
+
+
+    documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
+    gen = pt.index.treccollection2textgen(
+        documents, 
+        num_docs = 1500000, 
+        verbose=True, 
+        meta=["docno", "text"],
+        tag_text_length= 100000,
+        meta_tags={"text": "ELSE"}
+        )
+
+    indexer = pt.IterDictIndexer(
+        index_location, 
+        verbose=True,
+        meta={"docno": 26, "text": 100000},
+        meta_tags={"text": "ELSE"},
+        )
+
+
+    pipeline = doc2query >> indexer
+
+    index = pipeline.index(gen)
+
+    return index
+
+
+def main(args):
+    if args.d2q:
+        create_index_d2q(args.index)
+    else:
+        create_index(args.index)
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Create an pyterrier index from a config.")
 
@@ -59,6 +98,13 @@ if __name__ == "__main__":
         help="Name of the dataset in the config file",
     )
 
+    parser.add_argument(
+        "--d2q",
+        required=False,
+        action = 'store_true',
+        help="Whether to create a doc2query index",
+    )
+
     args = parser.parse_args()
 
-    create_index(args.index)
+    main(args)
