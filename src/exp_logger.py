@@ -5,7 +5,7 @@ import tqdm  # type: ignore
 import os
 import yaml  # type: ignore
 
-with open("settings.yml", "r") as yamlfile:
+with open(os.path.join(os.path.dirname(__file__), "..", "settings.yml"), "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 os.environ["JAVA_HOME"] = config["JAVA_HOME"]

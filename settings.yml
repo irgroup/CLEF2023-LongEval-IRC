@@ -23,7 +23,7 @@ LT:
 
 results_path: "results/trec/"
 metadata_path: "results/metadata/"
-index_dir: "./data/index/"
+index_dir: "data/index/"
 JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
 
 top_runs:

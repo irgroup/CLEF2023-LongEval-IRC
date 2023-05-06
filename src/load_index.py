@@ -8,11 +8,13 @@ from src.exp_logger import logger  # type: ignore
 import pyterrier as pt  # type: ignore
 import yaml  # type: ignore
 
-with open("settings.yml", "r") as yamlfile:
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+with open(os.path.join(BASE_PATH, "settings.yml"), "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 
-def load_index(index_name: str) -> pt.IndexFactory:
+def _load_index(index_name: str) -> pt.IndexFactory:
     """Load an index from disk.
 
     Args:
@@ -21,7 +23,7 @@ def load_index(index_name: str) -> pt.IndexFactory:
     Returns:
         pt.IndexFactory: The loaded index.
     """
-    index = pt.IndexFactory.of(config["index_dir"] + index_name)
+    index = pt.IndexFactory.of(os.path.join(BASE_PATH, config["index_dir"] + index_name))
     print(
         "Loaded index with ",
         index.getCollectionStatistics().getNumberOfDocuments(),
@@ -47,12 +49,13 @@ def setup_system(
     else:
         split = "test"
 
-    index = load_index(config[index_name]["index_name"])
-    topics = pt.io.read_topics(config[index_name][split]["topics"])
+    index = _load_index(config[index_name]["index_name"])
+    topics = pt.io.read_topics(os.path.join(BASE_PATH, config[index_name][split]["topics"]))
     if train:
-        qrels = pt.io.read_qrels(config[index_name][split]["qrels"])
+        qrels = pt.io.read_qrels(os.path.join(BASE_PATH, config[index_name][split]["qrels"]))
     else:
         qrels = None
+        
     return index, topics, qrels
 
 
