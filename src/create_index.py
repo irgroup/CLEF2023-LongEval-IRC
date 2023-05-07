@@ -21,6 +21,7 @@ import pyterrier_doc2query
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def create_index(index_name: str) -> pt.IndexFactory:
     """Index a dataset into pyterrier. The dataset must be in the TREC format.
@@ -32,8 +33,8 @@ def create_index(index_name: str) -> pt.IndexFactory:
     Returns:
         pt.IndexFactory: The index as a pyterrier IndexFactory object.
     """
-    index_location = config["index_dir"] + config[index_name]["index_name"]
-    documents_path = config[index_name]["docs"]
+    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"])
+    documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
 
     indexer = pt.TRECCollectionIndexer(
         index_location,
@@ -50,24 +51,24 @@ def create_index(index_name: str) -> pt.IndexFactory:
 
 
 def create_index_d2q(index_name: str) -> pt.IndexFactory:
-    index_location = config["index_dir"] + config[index_name]["index_name"] + "_d2q"
-    documents_path = config[index_name]["docs"]
+    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"] + "_d2q")
+    documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
 
     doc2query = pyterrier_doc2query.Doc2Query(append=True, verbose=True) # append generated queries to the orignal document text
 
 
     documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
     gen = pt.index.treccollection2textgen(
-        documents, 
-        num_docs = 1500000, 
-        verbose=True, 
+        documents,
+        num_docs = 1500000,
+        verbose=True,
         meta=["docno", "text"],
         tag_text_length= 100000,
         meta_tags={"text": "ELSE"}
         )
 
     indexer = pt.IterDictIndexer(
-        index_location, 
+        index_location,
         verbose=True,
         meta={"docno": 26, "text": 100000},
         meta_tags={"text": "ELSE"},

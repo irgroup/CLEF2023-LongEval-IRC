@@ -15,3 +15,6 @@ dependencies:
       - faiss-gpu==1.6.3
       - ranx
       - lightgbm
+      - py-cpuinfo
+      - gputil
+      - -e .

@@ -2,7 +2,7 @@ import os
 from typing import Tuple
 
 import pandas as pd  # type: ignore
-import numpy as np 
+import numpy as np
 from src.exp_logger import logger  # type: ignore
 
 import pyterrier as pt  # type: ignore
@@ -55,7 +55,7 @@ def setup_system(
         qrels = pt.io.read_qrels(os.path.join(BASE_PATH, config[index_name][split]["qrels"]))
     else:
         qrels = None
-        
+
     return index, topics, qrels
 
 
@@ -71,7 +71,7 @@ def get_train_splits(topics, qrels):
         qrels_split = qrels[qrels["qid"].isin(needed_ids)]
         diff = len(needed_ids) - len(qrels_split["qid"].unique())
         return qrels_split
-    
+
     # split topics
     train_topics, validation_topics, test_topics = np.split(
         topics, [int(0.6 * len(topics)), int(0.8 * len(topics))]
