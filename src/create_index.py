@@ -19,7 +19,7 @@ import pyterrier as pt  # type: ignore
 import pyterrier_doc2query
 from pyterrier_doc2query import Doc2Query, QueryScorer, QueryFilter
 from pyterrier_dr import ElectraScorer
-
+import pyterrier_colbert.indexing
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
@@ -115,6 +115,27 @@ def create_index_d2q_minus2(index_name: str) -> pt.IndexFactory:
 
     return index
 
+
+def create_index_colBERT(index_name: str) -> pt.IndexFactory:
+    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"] + "_colBERT")
+    documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
+
+    checkpoint="http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip"
+
+    indexer = pyterrier_colbert.indexing.ColBERTIndexer(
+        checkpoint, 
+        index_location, 
+        "WT_colbert", 
+        chunksize=3,
+        num_docs=1500000,
+        )
+
+    documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
+    index = indexer.index(documents)
+
+    return index
+
+
 def main(args):
     if args.d2q:
         create_index_d2q(args.index)
@@ -146,6 +167,13 @@ if __name__ == "__main__":
         required=False,
         action = 'store_true',
         help="Whether to create a doc2query-- index",
+    )
+
+    parser.add_argument(
+        "--colBERT",
+        required=False,
+        action = 'store_true',
+        help="Whether to create a colBERT index",
     )
 
     args = parser.parse_args()
