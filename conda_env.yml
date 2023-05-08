@@ -13,6 +13,7 @@ dependencies:
       - git+https://github.com/terrierteam/pyterrier_colbert
       - git+https://github.com/terrierteam/pyterrier_t5.git
       - git+https://github.com/terrierteam/pyterrier_doc2query.git
+      - git+https://github.com/terrierteam/pyterrier_deepct.git
       - xgboost
       - faiss-gpu==1.6.3
       - ranx
