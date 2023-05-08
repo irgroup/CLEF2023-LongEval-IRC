@@ -108,7 +108,7 @@ def create_index_d2q_minus2(index_name: str) -> pt.IndexFactory:
         meta_tags={"text": "ELSE"},
         )
 
-    
+
     pipeline = doc2query >> QueryScorer(scorer) >> QueryFilter(t=3.21484375) >> indexer # t=3.21484375 is the 70th percentile for generated queries on MS MARCO
 
     index = pipeline.index(gen)
@@ -117,10 +117,10 @@ def create_index_d2q_minus2(index_name: str) -> pt.IndexFactory:
 
 
 def create_index_colBERT(index_name: str) -> pt.IndexFactory:
-    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"] + "_colBERT")
+    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"][:-1] + "_colBERT")
     documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
 
-    checkpoint="http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip"
+    # checkpoint="http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip"
 
     documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
     gen = pt.index.treccollection2textgen(
@@ -142,9 +142,9 @@ def create_index_colBERT(index_name: str) -> pt.IndexFactory:
 
 
     indexer = pyterrier_colbert.indexing.ColBERTIndexer(
-        checkpoint, 
-        index_location, 
-        "WT_colbert", 
+        "data/models/colbert.dnn",
+        index_location,
+        "WT_colbert",
         chunksize=3,
         num_docs=1500000,
         )
@@ -160,6 +160,8 @@ def main(args):
         create_index_d2q(args.index)
     elif args.d2q_minus2:
         create_index_d2q_minus2(args.index)
+    elif args.colBERT:
+        create_index_colBERT(args.index)
     else:
         create_index(args.index)
 
