@@ -122,6 +122,25 @@ def create_index_colBERT(index_name: str) -> pt.IndexFactory:
 
     checkpoint="http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip"
 
+    documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
+    gen = pt.index.treccollection2textgen(
+        documents,
+        num_docs = 1500000,
+        verbose=True,
+        meta=["docno", "text"],
+        tag_text_length= 100000,
+        meta_tags={"text": "ELSE"}
+        )
+
+    indexer = pt.IterDictIndexer(
+        index_location,
+        verbose=True,
+        meta={"docno": 26, "text": 100000},
+        meta_tags={"text": "ELSE"},
+        )
+
+
+
     indexer = pyterrier_colbert.indexing.ColBERTIndexer(
         checkpoint, 
         index_location, 
@@ -131,7 +150,7 @@ def create_index_colBERT(index_name: str) -> pt.IndexFactory:
         )
 
     documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
-    index = indexer.index(documents)
+    index = indexer.index(gen)
 
     return index
 
