@@ -28,22 +28,21 @@ def get_system() -> pt.BatchRetrieve:
     Returns:
         pt.BatchRetrieve: System as a pyterrier BatchRetrieve object.
     """
-    pytcolbert = ColBERTFactory("../data/models/colbert.dnn", "../data/index/index_WT_colBERT", "WT_colbert", faiss_partitions=100)
-    
-    dense_e2e = pytcolbert.end_to_end()
+    pytcolbert = ColBERTFactory("data/models/colbert.dnn", "data/index/index_WT_colBERT", "WT_colbert", faiss_partitions=100, gpu=False)
+    dense_e2e = pytcolbert.end_to_end() % 1000
 
     return dense_e2e
 
 
 def main():
-    run_tag = tag("BM25", "colBERT")
+    run_tag = tag("colBERT", "colBERT_WT")
 
-    topics = pt.io.read_topics("../" + config["WT"]["train"]["topics"])
+    topics = pt.io.read_topics(config["WT"]["train"]["topics"])
 
     system = get_system()
     results = system.transform(topics)
 
-    pt.io.write_results(res=results, filename=os.path.join("..", config["results_path"] + run_tag))
+    pt.io.write_results(res=results, filename= config["results_path"] + run_tag)
 
 
 if __name__ == "__main__":

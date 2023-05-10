@@ -48,14 +48,14 @@ def get_system(index) -> pt.BatchRetrieve:
 
 def main(args):
     run_tag = tag("BM25+colBERT", args.index)
-    index, topics, _ = setup_system(args.index, train=args.train)
+    index, topics, _ = setup_system(args.index)
 
     system = get_system(index)
     results = system.transform(topics)
 
-    pt.io.write_results(res=results, filename=os.path.join("..", config["results_path"] + run_tag))
+    pt.io.write_results(res=results, filename=config["results_path"] + run_tag)
     write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
+        config["metadata_path"] + run_tag + ".yml",
         {
             "tag": run_tag,
             "method": {
