@@ -32,7 +32,7 @@ from src.exp_logger import logger
 
 logger.setLevel("INFO")
 
-with open("settings.yml", "r") as yamlfile:
+with open("../settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 

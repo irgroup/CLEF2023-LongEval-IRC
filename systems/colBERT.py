@@ -35,7 +35,7 @@ def get_system() -> pt.BatchRetrieve:
 
 
 def main():
-    run_tag = tag("colBERT", "colBERT_WT")
+    run_tag = tag("colBERT", "WT")
 
     topics = pt.io.read_topics(config["WT"]["train"]["topics"])
 

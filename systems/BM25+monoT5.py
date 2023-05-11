@@ -7,12 +7,12 @@ This system uses the monoT5 reranker and a BM25 first stage ranker.
 Example:
     Run the system with the following command::
 
-        $ python -m systems.monoT5-passages --index WT
-        $ python -m systems.monoT5-passages --index WT
-        $ python -m systems.monoT5-passages --index WT --model monoT5-MS-WT
-        $ python -m systems.monoT5-passages --index WT --model monoT5-MS-WT-train
-        $ python -m systems.monoT5-passages --index WT --model monoT5-WT
-        $ python -m systems.monoT5-passages --index WT --model monoT5-WT-train
+        $ python -m systems.monoT5 --index WT
+        $ python -m systems.monoT5 --index WT
+        $ python -m systems.monoT5 --index WT --model monoT5-MS-WT
+        $ python -m systems.monoT5 --index WT --model monoT5-MS-WT-train
+        $ python -m systems.monoT5 --index WT --model monoT5-WT
+        $ python -m systems.monoT5 --index WT --model monoT5-WT-train
 """
 from argparse import ArgumentParser
 from src.exp_logger import logger
@@ -41,12 +41,6 @@ def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve
         index, wmodel="BM25", verbose=True, metadata=["docno", "text"]
     ).parallel(6)
 
-    t5_window = pt.text.sliding(
-        text_attr="text",
-        length=150,
-        stride=75,
-        prepend_attr=None,
-    )
     mono_pipeline = bm25 >> pt.text.get_text(index, "text") >>  monoT5 
 
     return mono_pipeline
@@ -54,7 +48,7 @@ def get_system(index: pt.IndexFactory, model_path: str = "") -> pt.BatchRetrieve
 
 def main(args):
     name = "BM25+" + args.model if args.model else "monoT5"
-    run_tag = tag(name+"_fulltext", args.index)
+    run_tag = tag(name, args.index)
 
     index, topics, _ = setup_system(args.index)
 

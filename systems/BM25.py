@@ -32,7 +32,7 @@ def main(args):
 
     # BM25
     run_tag = tag("BM25", args.index)
-    BM25 = pt.BatchRetrieve(index, wmodel="BM25", verbose=True).parallel(6)
+    BM25 = pt.BatchRetrieve(index, wmodel="BM25", verbose=True)
     pt.io.write_results(BM25(topics), results_path + run_tag)
     write_metadata_yaml(
         metadata_path + run_tag + ".yml",
@@ -54,7 +54,7 @@ def main(args):
 
     # TF_IDF
     run_tag = tag("TF_IDF", args.index)
-    TF_IDF = pt.BatchRetrieve(index, wmodel="TF_IDF", verbose=True).parallel(6)
+    TF_IDF = pt.BatchRetrieve(index, wmodel="TF_IDF", verbose=True)
     pt.io.write_results(TF_IDF(topics), results_path + run_tag, run_name=run_tag)
     write_metadata_yaml(
         metadata_path + run_tag + ".yml",
@@ -73,7 +73,7 @@ def main(args):
 
     # XSqrA_M
     run_tag = tag("XSqrA_M", args.index)
-    XSqrA_M = pt.BatchRetrieve(index, wmodel="XSqrA_M", verbose=True).parallel(6)
+    XSqrA_M = pt.BatchRetrieve(index, wmodel="XSqrA_M", verbose=True)
     pt.io.write_results(XSqrA_M(topics), results_path + run_tag, run_name=run_tag)
     write_metadata_yaml(
         metadata_path + run_tag + ".yml",
@@ -92,7 +92,7 @@ def main(args):
 
     # PL2
     run_tag = tag("PL2", args.index)
-    PL2 = pt.BatchRetrieve(index, wmodel="PL2", verbose=True).parallel(6)
+    PL2 = pt.BatchRetrieve(index, wmodel="PL2", verbose=True)
     pt.io.write_results(PL2(topics), results_path + run_tag, run_name=run_tag)
     write_metadata_yaml(
         metadata_path + run_tag + ".yml",
@@ -111,7 +111,7 @@ def main(args):
 
     # DPH
     run_tag = tag("DPH", args.index)
-    DPH = pt.BatchRetrieve(index, wmodel="DPH", verbose=True).parallel(6)
+    DPH = pt.BatchRetrieve(index, wmodel="DPH", verbose=True)
     pt.io.write_results(DPH(topics), results_path + run_tag, run_name=run_tag)
     write_metadata_yaml(
         metadata_path + run_tag + ".yml",
