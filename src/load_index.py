@@ -62,7 +62,7 @@ def setup_system(
 def tag(system: str, index: str) -> str:
     """Create a tag for the run."""
     team = config["team"]
-    return f"{team}-{system}.{index}"
+    return f"{team}_{system}.{index}"
 
 
 def get_train_splits(topics, qrels):
