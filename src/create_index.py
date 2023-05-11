@@ -56,7 +56,7 @@ def create_index_d2q(index_name: str) -> pt.IndexFactory:
     index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"] + "_d2q")
     documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
 
-    doc2query = pyterrier_doc2query.Doc2Query(append=True, verbose=True) # append generated queries to the orignal document text
+    doc2query = pyterrier_doc2query.Doc2Query(batch_size=16, append=True, num_samples=10, verbose=True) # append generated queries to the orignal document text
 
 
     documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
@@ -87,7 +87,7 @@ def create_index_d2q_minus2(index_name: str) -> pt.IndexFactory:
     index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"] + "_d2q--")
     documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
 
-    doc2query = Doc2Query(append=True, num_samples=5, verbose=True)
+    doc2query = Doc2Query(append=False, num_samples=20, verbose=True)
     scorer = ElectraScorer()
 
 

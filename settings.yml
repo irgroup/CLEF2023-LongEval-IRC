@@ -19,6 +19,27 @@ LT:
   urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
   test:
     topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
+WT_d2q:
+  index_name: "index_WT_d2q"
+  docs: "data/publish/English/Documents/Trec/"
+  urls: "data/publish/French/urls.txt"
+  train:
+    topics: "data/publish/English/Queries/train.trec"
+    qrels: "data/publish/French/Qrels/train.txt"
+  test:
+    topics: "data/publish/English/Queries/heldout.trec"
+ST_d2q:
+  index_name: "index_ST_d2q"
+  docs: "data/test-collection/A-Short-July/English/Documents/Trec/"
+  urls: "data/test-collection/A-Short-July/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/A-Short-July/English/Queries/test07.trec"
+LT_d2q:
+  index_name: "index_LT_d2q"
+  docs: "data/test-collection/B-Long-September/English/Documents/Trec/"
+  urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
 
 
 results_path: "results/trec/"
