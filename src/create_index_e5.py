@@ -13,12 +13,12 @@ from argparse import ArgumentParser
 import pyterrier as pt  # type: ignore
 
 from src.load_index import setup_system, tag
-import torch 
+import torch
 import faiss
 from tqdm import tqdm
 
 
-with open("../settings.yml", "r") as yamlfile:
+with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 
@@ -41,7 +41,7 @@ def calc_embeddings(texts, mode='passage'):
   batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
   for key, val in batch_dict.items():
     batch_dict[key] = batch_dict[key].cuda(non_blocking=True)
-  
+
   outputs = model(**batch_dict)
   embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
   return embeddings.detach().cpu()#.numpy()
@@ -69,18 +69,18 @@ def gen_docs(doc_path, batch_size):
                     else:
                         batch.append(doc["contents"])
                     ids[c]= doc["id"]
-                    
+
 
 
 def encode(doc_path, batch_size, num_docs, save_every, stop_at=0):
     """create embeddings for docs in batches and save in batches"""
     def save_embs(embs, c, batch_size):
         embs = torch.cat(embs)
-        torch.save(embs, f"../data/index/e5/e5_embeddings_{c}.pt")
-        logger.info(f"Saved embeddings for {c*batch_size} documents")
+        torch.save(embs, f"data/index/e5/e5_embeddings_{c}.pt")
+        logger.info(f"Saved embeddings for {c+1*batch_size} documents")
 
     def save_ids(ids):
-        with open(f"../data/index/e5/e5_ids_{c}.json", "w") as f:
+        with open(f"data/index/e5/e5_ids_{c}.json", "w") as f:
             json.dump(ids, f)
     c = 0
     embs = []
@@ -111,7 +111,7 @@ def create_index(index_dir, size=384):
 
     for file in files:
         if file.endswith(".pt"):
-            index.add(torch.load(index_dir+"/"+file)) 
+            index.add(torch.load(index_dir+"/"+file))
     index.save(index_dir+"/e5.index")
 
 
@@ -124,7 +124,7 @@ def load_index(index_dir):
 # write results
 def write_trec(topics, I, D, ids):
     """write results as trec"""
-    with open("../results/trec/e5.WT", "w") as f:
+    with open("results/trec/e5.WT", "w") as f:
         for qid, query, results in zip(topics["qid"].to_list(), I, D):
             for rank, (doc_id, distance) in enumerate(zip(query, results)):
                 f.write("{} Q0 {} {} {} IRC-e5\n".format(qid, ids[doc_id], rank, 10-distance))
@@ -136,9 +136,10 @@ def write_trec(topics, I, D, ids):
 def main(args):
     # Topics
     logger.setLevel("INFO")
-    
+
     doc_path = config[args.index]["docs"].replace("Trec", "Json")
-    index_dir = "data/index/e5."+args.index
+    index_dir = "data/index/e5"
+    print("hi")
 
     if not os.path.exists(index_dir):
         os.makedirs(index_dir)
@@ -184,4 +185,5 @@ if __name__ == "__main__":
         required=True,
         help="Save every x batches",
     )
-    
+    args = parser.parse_args()
+    main(args)

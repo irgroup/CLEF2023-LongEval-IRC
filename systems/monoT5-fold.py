@@ -43,8 +43,8 @@ class MonoT5Dataset(Dataset):
 
 def load_data(train, test, topics, qrels):
     # Load data
-    relevant = pd.read_json("data/passages/t5/WT-relevant-passages.jsonl", lines=True)
-    not_relevant = pd.read_json("data/passages/t5/WT-not-relevant-passages.jsonl", lines=True)
+    relevant = pd.read_json("data/passages/t5/WT-relevant-passages-arb.jsonl", lines=True)
+    not_relevant = pd.read_json("data/passages/t5/WT-not-relevant-passages-arb.jsonl", lines=True)
 
     ## topics
     train_topics = topics.iloc[train]
