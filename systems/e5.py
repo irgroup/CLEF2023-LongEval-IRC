@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""BM25 baseline systems including pseudo relevance feedback and rank fusion.
+"""E5 dense retrieval system through faiss.
 
 Example:
     Create runs on the train topics of the given index::
