@@ -19,6 +19,7 @@ LT:
   urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
   test:
     topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
+
 WT_d2q:
   index_name: "index_WT_d2q"
   docs: "data/publish/English/Documents/Trec/"
@@ -41,6 +42,49 @@ LT_d2q:
   test:
     topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
 
+WT_e5_small:
+  index_name: "WT_e5_small"
+  docs: "data/publish/English/Documents/Trec/"
+  urls: "data/publish/French/urls.txt"
+  train:
+    topics: "data/publish/English/Queries/train.trec"
+    qrels: "data/publish/French/Qrels/train.txt"
+  test:
+    topics: "data/publish/English/Queries/heldout.trec"
+ST_e5_small:
+  index_name: "ST_e5_small"
+  docs: "data/test-collection/A-Short-July/English/Documents/Trec/"
+  urls: "data/test-collection/A-Short-July/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/A-Short-July/English/Queries/test07.trec"
+LT_e5_small:
+  index_name: "LT_e5_small"
+  docs: "data/test-collection/B-Long-September/English/Documents/Trec/"
+  urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
+
+WT_colBERT:
+  index_name: "WT_colBERT"
+  docs: "data/publish/English/Documents/Trec/"
+  urls: "data/publish/French/urls.txt"
+  train:
+    topics: "data/publish/English/Queries/train.trec"
+    qrels: "data/publish/French/Qrels/train.txt"
+  test:
+    topics: "data/publish/English/Queries/heldout.trec"
+ST_colBERT:
+  index_name: "ST_colBERT"
+  docs: "data/test-collection/A-Short-July/English/Documents/Trec/"
+  urls: "data/test-collection/A-Short-July/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/A-Short-July/English/Queries/test07.trec"
+LT_colBERT:
+  index_name: "LT_colBERT"
+  docs: "data/test-collection/B-Long-September/English/Documents/Trec/"
+  urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
 
 results_path: "results/trec/"
 metadata_path: "results/metadata/"
