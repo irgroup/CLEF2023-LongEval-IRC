@@ -71,7 +71,7 @@ def gen_docs(doc_path, batch_size):
                     c+=1
 
 
-def encode(doc_path, index_path, index, batch_size, num_docs, save_every, stop_at=10):
+def encode(doc_path, index_path, index, batch_size, num_docs, save_every, stop_at=0):
     """create embeddings for docs in batches and save in batches"""
     def save_embs(embs, c, batch_size):
         embs = torch.cat(embs)
