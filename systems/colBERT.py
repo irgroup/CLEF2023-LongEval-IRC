@@ -41,8 +41,7 @@ def get_system(index_path, index) -> pt.BatchRetrieve:
 
 
 def main(args):
-    run_tag = tag(args.index[3:], args.index)
-    checkpoint = f"intfloat/{args.index[3:]}"
+    run_tag = tag(args.index[3:], args.index[:2])
 
     slice = "train" if args.train else "test"
     topics = pt.io.read_topics(config[args.index][slice]["topics"])

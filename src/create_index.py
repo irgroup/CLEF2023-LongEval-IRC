@@ -53,11 +53,10 @@ def create_index(index_name: str) -> pt.IndexFactory:
 
 
 def create_index_d2q(index_name: str) -> pt.IndexFactory:
-    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"] + "_d2q")
+    index_location = os.path.join(BASE_PATH, config["index_dir"] + config[index_name]["index_name"])
     documents_path = os.path.join(BASE_PATH, config[index_name]["docs"])
 
-    doc2query = pyterrier_doc2query.Doc2Query(batch_size=16, append=True, num_samples=10, verbose=True) # append generated queries to the orignal document text
-
+    doc2query = pyterrier_doc2query.Doc2Query(batch_size=16, append=True, num_samples=10, verbose=True)
 
     documents = [os.path.join(documents_path, path) for path in os.listdir(documents_path)]
     gen = pt.index.treccollection2textgen(
@@ -75,7 +74,6 @@ def create_index_d2q(index_name: str) -> pt.IndexFactory:
         meta={"docno": 26, "text": 100000},
         meta_tags={"text": "ELSE"},
         )
-
 
     pipeline = doc2query >> indexer
 

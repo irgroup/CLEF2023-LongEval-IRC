@@ -73,7 +73,7 @@ def write_trec(run_tag, topics, I, D, ids):
 
 
 def main(args):
-    run_tag = tag(args.index[3:], args.index)
+    run_tag = tag(args.index[3:], args.index[:2])
     checkpoint = f"intfloat/{args.index[3:]}"
 
     slice = "train" if args.train else "test"
