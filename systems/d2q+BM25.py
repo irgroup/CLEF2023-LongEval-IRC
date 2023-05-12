@@ -25,7 +25,7 @@ with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 def get_system(index) -> pt.BatchRetrieve:
-    BM25 = pt.BatchRetrieve(index, wmodel="BM25", verbose=True).parallel(6)
+    BM25 = pt.BatchRetrieve(index, wmodel="BM25", verbose=True)#.parallel(6)
     return BM25
 
 
@@ -34,7 +34,7 @@ def main(args):
 
     # BM25
     run_tag = tag("d2q+BM25", args.index[:2])
-    system = get_system(index_path=index, index=args.index)
+    system = get_system(index=index)
     pt.io.write_results(system(topics), config["results_path"] + run_tag)
     write_metadata_yaml(
         config["metadata_path"] + run_tag + ".yml",
