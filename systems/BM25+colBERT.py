@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""BM25 baseline systems including pseudo relevance feedback and rank fusion.
+"""BM25 baseline systems reranked with colBERT.
 
 Example:
     Create runs on the train topics of the given index::
 
+        $ python -m systems.BM25+colBERT --index WT --train
+
+    Create runs on the test topics of the given index::
+
         $ python -m systems.BM25+colBERT --index WT
-    
 """
 from argparse import ArgumentParser
 from src.exp_logger import logger
@@ -18,20 +21,12 @@ from src.load_index import setup_system, tag
 from src.metadata import get_metadata, write_metadata_yaml
 import yaml
 
-import pyterrier_colbert.ranking
-from pyterrier_colbert.indexing import ColBERTIndexer
 from pyterrier_colbert.ranking import ColBERTFactory
 
 with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
-
 logger.setLevel("INFO")
-
-
-results_path = "results/trec/"
-metadata_path = "results/metadata/"
-
 
 
 def get_system(index) -> pt.BatchRetrieve:
@@ -48,7 +43,7 @@ def get_system(index) -> pt.BatchRetrieve:
 
 def main(args):
     run_tag = tag("BM25+colBERT", args.index)
-    index, topics, _ = setup_system(args.index)
+    index, topics, _ = setup_system(args.index, train=args.train)
 
     system = get_system(index)
     results = system.transform(topics)
@@ -70,6 +65,7 @@ def main(args):
                     "2": {
                         "name": "colBERT",
                         "method": "pyterrier_colbert.ranking.ColBERTFactory",
+                        "checkpoint": "http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip",
                     }
                 },
             },
@@ -85,6 +81,12 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="Name of the dataset in the config file (WT, ST or LT)",
+    )
+    parser.add_argument(
+        "--train",
+        required=False,
+        action="store_true",
+        help="Use the train topics to create the.",
     )
 
     args = parser.parse_args()
