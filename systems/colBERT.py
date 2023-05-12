@@ -41,12 +41,12 @@ def get_system(index_path, index) -> pt.BatchRetrieve:
 
 
 def main(args):
-    run_tag = tag(args.index[3:], args.index[:2])
+    run_tag = tag(args.index[3:], args.index[2:])
 
     slice = "train" if args.train else "test"
     topics = pt.io.read_topics(config[args.index][slice]["topics"])
     index_path = os.path.join(config["index_dir"], args.index)
-    
+
     system = get_system(index_path=index_path, index=args.index)
     results = system.transform(topics)
 
