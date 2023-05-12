@@ -19,7 +19,11 @@ from ranx import Run, fuse
 
 from src.load_index import setup_system, tag
 from src.metadata import get_metadata, write_metadata_yaml
+import yaml 
 
+with open("settings.yml", "r") as yamlfile:
+    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
+    
 logger.setLevel("INFO")
 
 
@@ -35,7 +39,7 @@ def main(args):
     BM25 = pt.BatchRetrieve(index, wmodel="BM25", verbose=True)
     pt.io.write_results(BM25(topics), results_path + run_tag)
     write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
+        config["metadata_path"] + run_tag + ".yml",
         {
             "tag": run_tag,
             "method": {
@@ -52,24 +56,24 @@ def main(args):
         },
     )
 
-    # TF_IDF
-    run_tag = tag("TF_IDF", args.index)
-    TF_IDF = pt.BatchRetrieve(index, wmodel="TF_IDF", verbose=True)
-    pt.io.write_results(TF_IDF(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "TF_IDF",
-                        "method": "org.terrier.matching.models.TF_IDF",
-                    }
-                },
-            },
-        },
-    )
+    # # TF_IDF
+    # run_tag = tag("TF_IDF", args.index)
+    # TF_IDF = pt.BatchRetrieve(index, wmodel="TF_IDF", verbose=True)
+    # pt.io.write_results(TF_IDF(topics), results_path + run_tag, run_name=run_tag)
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "TF_IDF",
+    #                     "method": "org.terrier.matching.models.TF_IDF",
+    #                 }
+    #             },
+    #         },
+    #     },
+    # )
 
     # XSqrA_M
     run_tag = tag("XSqrA_M", args.index)
@@ -109,24 +113,24 @@ def main(args):
         },
     )
 
-    # DPH
-    run_tag = tag("DPH", args.index)
-    DPH = pt.BatchRetrieve(index, wmodel="DPH", verbose=True)
-    pt.io.write_results(DPH(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "DPH",
-                        "method": "org.terrier.matching.models.DPH",
-                    }
-                },
-            },
-        },
-    )
+    # # DPH
+    # run_tag = tag("DPH", args.index)
+    # DPH = pt.BatchRetrieve(index, wmodel="DPH", verbose=True)
+    # pt.io.write_results(DPH(topics), results_path + run_tag, run_name=run_tag)
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "DPH",
+    #                     "method": "org.terrier.matching.models.DPH",
+    #                 }
+    #             },
+    #         },
+    #     },
+    # )
 
     # Pseudo relevance feedback
     # BM25 + RM3
@@ -188,45 +192,45 @@ def main(args):
         },
     )
 
-    # BM25 + Axiomatic QE
-    run_tag = tag("BM25+axio", args.index)
-    axio_pipe = BM25 >> pt.rewrite.AxiomaticQE(index) >> BM25
-    pt.io.write_results(axio_pipe(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "bm25",
-                        "method": "org.terrier.matching.models.BM25",
-                        "k_1": "1.2",
-                        "k_3": "8",
-                        "b": "0.75",
-                    },
-                    "2": {
-                        "name": "axiomatic query expansion",
-                        "method": "pyterrier.rewrite.AxiomaticQE",
-                        "fb_terms": "10",
-                        "fb_docs": "3",
-                        "reranks": "bm25",
-                    },
-                },
-            },
-        },
-    )
+    # # BM25 + Axiomatic QE
+    # run_tag = tag("BM25+axio", args.index)
+    # axio_pipe = BM25 >> pt.rewrite.AxiomaticQE(index) >> BM25
+    # pt.io.write_results(axio_pipe(topics), results_path + run_tag, run_name=run_tag)
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "bm25",
+    #                     "method": "org.terrier.matching.models.BM25",
+    #                     "k_1": "1.2",
+    #                     "k_3": "8",
+    #                     "b": "0.75",
+    #                 },
+    #                 "2": {
+    #                     "name": "axiomatic query expansion",
+    #                     "method": "pyterrier.rewrite.AxiomaticQE",
+    #                     "fb_terms": "10",
+    #                     "fb_docs": "3",
+    #                     "reranks": "bm25",
+    #                 },
+    #             },
+    #         },
+    #     },
+    # )
 
     # fuse: BM25, XSqrA_M, PL2
     run_tag = tag("RRF(BM25-XSqrA_M-PL2)", args.index)
 
-    baseline_ranx = Run.from_file("results/trec/IRC-BM25." + args.index, kind="trec")
+    baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
     baseline_ranx.name = "BM25"
 
     runs = []
-    runs.append(Run.from_file("results/trec/IRC-BM25." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC-XSqrA_M." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC-PL2." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
 
     fuse_method = "rrf"
 
@@ -273,13 +277,13 @@ def main(args):
 
     # fuse: BM25-RM3, XSqrA_M, PL2
     run_tag = tag("RRF(BM25RM3-XSqrA_M-PL2)", args.index)
-    baseline_ranx = Run.from_file("results/trec/IRC-BM25." + args.index, kind="trec")
+    baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
     baseline_ranx.name = "BM25"
 
     runs = []
-    runs.append(Run.from_file("results/trec/IRC-BM25+RM3_opt." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC-XSqrA_M." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC-PL2." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_BM25+RM3." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
 
     fuse_method = "rrf"
 
@@ -333,20 +337,20 @@ def main(args):
     )
 
     # fuse: BM25-Bo1, XSqrA_M, PL2
-    run_tag = tag("RRF(BM25RM3-XSqrA_M-PL2)", args.index)
-    baseline_ranx = Run.from_file("results/trec/IRC-BM25." + args.index, kind="trec")
+    run_tag = tag("RRF(BM25+Bo1-XSqrA_M-PL2)", args.index)
+    baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
     baseline_ranx.name = "BM25"
 
     runs = []
-    runs.append(Run.from_file("results/trec/IRC-BM25+Bo1." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC-XSqrA_M." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC-PL2." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_BM25+Bo1." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
+    runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
 
     fuse_method = "rrf"
 
     run_rrf = fuse(runs=runs, method=fuse_method)
     run_rrf.name = run_tag
-    run_rrf.save("results/trec/IRC-RRF(BBXP)." + args.index, kind="trec")
+    run_rrf.save("results/trec/RRF(BM25+Bo1-XSqrA_M-PL2)." + args.index, kind="trec")
     write_metadata_yaml(
         metadata_path + run_tag + ".yml",
         {
