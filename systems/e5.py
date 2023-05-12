@@ -34,8 +34,8 @@ with open("settings.yml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 # TODO fix checkpoint loading dynamically
-tokenizer = AutoTokenizer.from_pretrained('intfloat/e5-small')
-model = AutoModel.from_pretrained('intfloat/e5-small')
+tokenizer = AutoTokenizer.from_pretrained('intfloat/e5-base')
+model = AutoModel.from_pretrained('intfloat/e5-base')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 _ = model.to(device)
@@ -60,7 +60,7 @@ def calc_embeddings(texts, mode='passage'):
 
 def load_index(index_dir):
     """load faiss index"""
-    index = faiss.read_index(index_dir)
+    index = faiss.read_index(index_dir+"/index")
     return index
 
 
@@ -69,7 +69,7 @@ def write_trec(run_tag, topics, I, D, ids):
     with open("results/trec/"+run_tag, "w") as f:
         for qid, query, results in zip(topics["qid"].to_list(), I, D):
             for rank, (doc_id, distance) in enumerate(zip(query, results)):
-                f.write("{} Q0 {} {} {} IRC-e5\n".format(qid, ids[str(doc_id+1)], rank, 10-distance, run_tag))
+                f.write("{} Q0 {} {} {} IRC-e5\n".format(qid, ids[str(doc_id)], rank, 10-distance, run_tag))
 
 
 def main(args):
@@ -82,7 +82,7 @@ def main(args):
     with open(f"data/index/{args.index}/{args.index}_ids.json", "r") as f:
         ids = json.load(f)
 
-    index = load_index(os.path.join(config["index_dir"], args.index, args.index))
+    index = load_index(os.path.join(config["index_dir"], args.index))
     D, I = index.search(query_embedding.numpy(), k = 1000)
 
     write_trec(run_tag, topics, I, D, ids)

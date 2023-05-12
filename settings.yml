@@ -64,6 +64,29 @@ LT_e5_small:
   test:
     topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
 
+WT_e5_base:
+  index_name: "WT_e5_base"
+  docs: "data/publish/English/Documents/Trec/"
+  urls: "data/publish/French/urls.txt"
+  train:
+    topics: "data/publish/English/Queries/train.trec"
+    qrels: "data/publish/French/Qrels/train.txt"
+  test:
+    topics: "data/publish/English/Queries/heldout.trec"
+ST_e5_base:
+  index_name: "ST_e5_base"
+  docs: "data/test-collection/A-Short-July/English/Documents/Trec/"
+  urls: "data/test-collection/A-Short-July/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/A-Short-July/English/Queries/test07.trec"
+LT_e5_base:
+  index_name: "LT_e5_base"
+  docs: "data/test-collection/B-Long-September/English/Documents/Trec/"
+  urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
+  test:
+    topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
+
+
 WT_colBERT:
   index_name: "WT_colBERT"
   docs: "data/publish/English/Documents/Trec/"

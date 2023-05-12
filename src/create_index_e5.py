@@ -23,8 +23,8 @@ with open("settings.yml", "r") as yamlfile:
 
 
 
-tokenizer = AutoTokenizer.from_pretrained('intfloat/e5-small')
-model = AutoModel.from_pretrained('intfloat/e5-small')
+tokenizer = AutoTokenizer.from_pretrained('intfloat/e5-base')
+model = AutoModel.from_pretrained('intfloat/e5-base')
 #prepare model for gpu use
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 _ = model.to(device)
@@ -60,7 +60,6 @@ def gen_docs(doc_path, batch_size):
             for line in f:
                 l = json.loads(line)
                 for doc in l:
-                    c+=1
                     if len(batch) == batch_size:
                         full_batch = batch
                         batch  = []
@@ -69,18 +68,18 @@ def gen_docs(doc_path, batch_size):
                     else:
                         batch.append(doc["contents"])
                     ids[c]= doc["id"]
+                    c+=1
 
 
-
-def encode(doc_path, batch_size, num_docs, save_every, stop_at=0):
+def encode(doc_path, index_path, index, batch_size, num_docs, save_every, stop_at=10):
     """create embeddings for docs in batches and save in batches"""
     def save_embs(embs, c, batch_size):
         embs = torch.cat(embs)
-        torch.save(embs, f"data/index/e5/e5_embeddings_{c}.pt")
-        logger.info(f"Saved embeddings for {c+1*batch_size} documents")
+        torch.save(embs, f"{index_path}/{index}/e5_embeddings_{c}.pt")
+        logger.info(f"Saved embeddings for {c*batch_size} documents")
 
     def save_ids(ids):
-        with open(f"data/index/e5/e5_ids_{c}.json", "w") as f:
+        with open(os.path.join(index_path, index, index+"_ids.json"), "w") as f:
             json.dump(ids, f)
     c = 0
     embs = []
@@ -95,42 +94,25 @@ def encode(doc_path, batch_size, num_docs, save_every, stop_at=0):
         if stop_at:
             if c == stop_at:
                 break
-    save_embs(embs, c, save_every)
+    if embs:
+        save_embs(embs, c, save_every)
     save_ids(ids)
     logger.info(f"Done with encoding")
 
 
 
 # load index
-def create_index(index_dir, size=384):
+def create_index(index_dir, size=768):
     """create index from embedding parts"""
     files = os.listdir(index_dir)
+    files.sort()  # TODO sorting fails, to leading 0
 
     index = faiss.IndexFlatL2(size)   # build the index
-    print(index.is_trained)
 
     for file in files:
         if file.endswith(".pt"):
-            index.add(torch.load(index_dir+"/"+file))
-    index.save(index_dir+"/e5.index")
-
-
-def load_index(index_dir):
-    """load faiss index"""
-    index = faiss.read_index(index_dir+"/e5.index")
-    return index
-
-
-# write results
-def write_trec(topics, I, D, ids):
-    """write results as trec"""
-    with open("results/trec/e5.WT", "w") as f:
-        for qid, query, results in zip(topics["qid"].to_list(), I, D):
-            for rank, (doc_id, distance) in enumerate(zip(query, results)):
-                f.write("{} Q0 {} {} {} IRC-e5\n".format(qid, ids[doc_id], rank, 10-distance))
-                # print(qid, "Q0", ids[doc_id], rank, 10-distance, "IRC-e5")
-
-
+            index.add(torch.load(index_dir+"/"+file).numpy())
+    faiss.write_index(index, index_dir+"/index")
 
 
 def main(args):
@@ -138,28 +120,21 @@ def main(args):
     logger.setLevel("INFO")
 
     doc_path = config[args.index]["docs"].replace("Trec", "Json")
-    index_dir = "data/index/e5"
-    print("hi")
 
-    if not os.path.exists(index_dir):
-        os.makedirs(index_dir)
+    if not os.path.exists(config["index_dir"]+args.index):
+        os.makedirs(config["index_dir"]+args.index)
 
-
-
-
-
-    encode(doc_path=doc_path, batch_size=args.batch_size, num_docs=1570734, save_every=args.save)
-
-
-
-    # topics = pt.io.read_topics("../" + config["WT"]["train"]["topics"])  # load topics
-    # query_embedding = calc_embeddings(topics["query"], mode='query')     # encode query embeddings
-
-    # index = load_index(index_dir)                                        # load index
-    # D, I = index.search(query_embedding[:2], k = 1000)                   # actual search
+    encode(
+        doc_path=doc_path, 
+        index_path=config["index_dir"],
+        index = args.index,
+        batch_size=args.batch_size, 
+        num_docs=1570734, 
+        save_every=args.save
+        )
 
     logger.info("Done with encodng, start indexing...")
-    create_index(index_dir)
+    create_index(os.path.join(config["index_dir"]+args.index))
     logger.info("Done with indexing")
 
 
