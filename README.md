@@ -1,10 +1,11 @@
-# LongEval
 
-## Experiments
+# CLEF2023-LongEval-IRC
 
-### Setup
+## Setup
 - `conda create env -f conda_env && conda activate LongEval`
 
+
+## Experiments
 
 ### BM25 and Fuse Runs
 Fusion of three runs: BM25 with Bo1 query expansion, XSqrA_M and PL2. All parameters are PyTerrier default, and test terms from three docs were used for expansion.
