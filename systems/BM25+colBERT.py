@@ -32,11 +32,10 @@ logger.setLevel("INFO")
 def get_system(index) -> pt.BatchRetrieve:
     BM25 = pt.BatchRetrieve(index, wmodel="BM25", verbose=True).parallel(6)
 
-    colbert_factory = ColBERTFactory(
-        "data/models/colbert.dnn", None, None)
-    colbert = colbert_factory.text_scorer(doc_attr='text')
+    colbert_factory = ColBERTFactory("data/models/colbert.dnn", None, None)
+    colbert = colbert_factory.text_scorer(doc_attr="text")
 
-    sparse_colbert = BM25 >> pt.text.get_text(index, 'text') >> colbert
+    sparse_colbert = BM25 >> pt.text.get_text(index, "text", by_query=True) >> colbert
 
     return sparse_colbert
 
@@ -66,13 +65,12 @@ def main(args):
                         "name": "colBERT",
                         "method": "pyterrier_colbert.ranking.ColBERTFactory",
                         "checkpoint": "http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip",
-                    }
+                    },
                 },
             },
         },
     )
 
-   
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Create an pyterrier index from a config.")
