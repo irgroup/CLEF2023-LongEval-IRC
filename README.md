@@ -39,6 +39,7 @@ Dense retrieval system from [intfloat/e5-base](https://huggingface.co/intfloat/e
 - `python -m src.create_index_e5 --index WT_e5_base --batch_size 150 --save 1000 && \ 
 python -m src.create_index_e5 --index ST_e5_base --batch_size 150 --save 1000 && \ 
 python -m src.create_index_e5 --index LT_e5_base --batch_size 150 --save 1000`
+- At the moment, the embedding parts are sorted lexically, which is a problem with sub-collections of more than nine parts because leading zeros are missing. To ensure a correct index, leading zeros need to be added manually to the embedding.pt files before continuing with the next step.
 - `python -m system.e5 --index WT_e5_base && python -m system.e5 --index ST_e5_base && python -m system.e5 --index LT_e5_base`
 
 
