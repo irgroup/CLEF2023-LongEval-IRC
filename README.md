@@ -29,6 +29,11 @@ python -m src.create_index_e5 --index ST_e5_base --batch_size 150 --save 1000 &&
 python -m src.create_index_e5 --index LT_e5_base --batch_size 150 --save 1000`
 - `python -m system.e5 --index WT_e5_base && python -m system.e5 --index ST_e5_base && python -m system.e5 --index LT_e5_base`
 
+### BM25+ColBERT
+BM25 ranking that was reranked by colBERT. The full documents were used (and truncated after 512 subword tokens). Completing one run took under 30 minutes on a single NVIDIA GeForce RTX 2080Ti GPU.
+
+- `python -m systems.BM25+colBERT --index WT && python -m systems.BM25+colBERT --index ST && python -m systems.BM25+colBERT --index LT`
+
 
 ### BM25+monoT5
 BM25 ranking that was reranked by [castorini/monot5-base-msmarco](https://huggingface.co/castorini/monot5-base-msmarco). The full documents were used (and truncated after 512 subword tokens). Completing one run took around 5 hours on a single NVIDIA GeForce RTX 2080Ti GPU.
