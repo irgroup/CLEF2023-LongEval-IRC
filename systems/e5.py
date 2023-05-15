@@ -69,7 +69,7 @@ def write_trec(run_tag, topics, I, D, ids):
     with open("results/trec/"+run_tag, "w") as f:
         for qid, query, results in zip(topics["qid"].to_list(), I, D):
             for rank, (doc_id, distance) in enumerate(zip(query, results)):
-                f.write("{} Q0 {} {} {} IRC-e5\n".format(qid, ids[str(doc_id)], rank, 10-distance, run_tag))
+                f.write("{} Q0 {} {} {} IRC-e5\n".format(qid, ids[str(doc_id)], rank, 100-distance, run_tag))
 
 
 def main(args):

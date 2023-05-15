@@ -124,14 +124,14 @@ def main(args):
     if not os.path.exists(config["index_dir"]+args.index):
         os.makedirs(config["index_dir"]+args.index)
 
-    encode(
-        doc_path=doc_path, 
-        index_path=config["index_dir"],
-        index = args.index,
-        batch_size=args.batch_size, 
-        num_docs=1570734, 
-        save_every=args.save
-        )
+    # encode(
+        # doc_path=doc_path, 
+        # index_path=config["index_dir"],
+        # index = args.index,
+        # batch_size=args.batch_size, 
+        # num_docs=1570734, 
+        # save_every=args.save
+        # )
 
     logger.info("Done with encodng, start indexing...")
     create_index(os.path.join(config["index_dir"]+args.index))
