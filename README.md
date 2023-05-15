@@ -21,14 +21,6 @@ Default PyTerrier BM25 run on an expanded index with Doc2Query. Each document wa
 - `python -m systems.d2q+BM25 --index WT_d2q && python -m systems.d2q+BM25 --index LT_d2q && python -m systems.d2q+BM25 --index ST_d2q`
 
 
-### E5
-Dense retrieval system from [intfloat/e5-base](https://huggingface.co/intfloat/e5-base) embeddings and a Faiss IndexFlatL2 index. The creation of the embeddings and indexing took around 6 hours on a single NVIDIA GeForce RTX 3070 GPU per sub-collection. The model was not further trained.
-
-- `python -m src.create_index_e5 --index WT_e5_base --batch_size 150 --save 1000 && \ 
-python -m src.create_index_e5 --index ST_e5_base --batch_size 150 --save 1000 && \ 
-python -m src.create_index_e5 --index LT_e5_base --batch_size 150 --save 1000`
-- `python -m system.e5 --index WT_e5_base && python -m system.e5 --index ST_e5_base && python -m system.e5 --index LT_e5_base`
-
 ### BM25+ColBERT
 BM25 ranking that was reranked by colBERT. The full documents were used (and truncated after 512 subword tokens). Completing one run took under 30 minutes on a single NVIDIA GeForce RTX 2080Ti GPU.
 
@@ -40,15 +32,26 @@ BM25 ranking that was reranked by [castorini/monot5-base-msmarco](https://huggin
 
 - `python -m systems.BM25+monoT5 --index WT && python -m systems.BM25+monoT5 --index ST && python -m systems.BM25+monoT5 --index LT`
 
+
+### E5
+Dense retrieval system from [intfloat/e5-base](https://huggingface.co/intfloat/e5-base) embeddings and a Faiss IndexFlatL2 index. The creation of the embeddings and indexing took around 6 hours on a single NVIDIA GeForce RTX 3070 GPU per sub-collection. The model was not further trained.
+
+- `python -m src.create_index_e5 --index WT_e5_base --batch_size 150 --save 1000 && \ 
+python -m src.create_index_e5 --index ST_e5_base --batch_size 150 --save 1000 && \ 
+python -m src.create_index_e5 --index LT_e5_base --batch_size 150 --save 1000`
+- `python -m system.e5 --index WT_e5_base && python -m system.e5 --index ST_e5_base && python -m system.e5 --index LT_e5_base`
+
+
+
 ## Results on the train topics of the WT sub-collection
  |System | map | bpref | recip_rank | P_20 | ndcg | ndcg_cut_20 |
  |:--- | :---: | :---: | :---: | :---: | :---: | :---: |
- | BM25 | 0.1452 | 0.3245 | 0.2604 | 0.0654 | 0.2884 | 0.2087 | 
- | RRF(BM25+Bo1-XSqrA_M-PL2) | 0.1511 | 0.3466 | 0.2686 | 0.0673 | 0.3040 | 0.2155 | 
- | d2q(10)>BM25 | 0.1799 | 0.3361 | 0.2918 | 0.0781 | 0.3117 | 0.2494 | 
- | BM25+monoT5 | 0.1809 | 0.3494 | 0.3216 | 0.0768 | 0.3208 | 0.2490 | 
- | BM25+colBERT | 0.1682 | 0.3447 | 0.3046 | 0.0692 | 0.3082 | 0.2310 | 
- | e5_base | 0.1545 | 0.3483 | 0.2826 | 0.0634 | 0.2910 | 0.2128 | 
+ | `IRC_BM25` | 0.1452 | 0.3245 | 0.2604 | 0.0654 | 0.2884 | 0.2087 | 
+ | `IRC_RRF(BM25+Bo1-XSqrA_M-PL2)` | 0.1511 | 0.3466 | 0.2686 | 0.0673 | 0.3040 | 0.2155 | 
+ | `IRC_d2q(10)>BM25` | 0.1799 | 0.3361 | 0.2918 | 0.0781 | 0.3117 | 0.2494 | 
+ | `IRC_BM25+colBERT` | 0.1682 | 0.3447 | 0.3046 | 0.0692 | 0.3082 | 0.2310 | 
+ | `IRC_BM25+monoT5` | 0.1809 | 0.3494 | 0.3216 | 0.0768 | 0.3208 | 0.2490 | 
+ | `IRC_E5_base` | 0.1545 | 0.3483 | 0.2826 | 0.0634 | 0.2910 | 0.2128 | 
 
 
  ## References
