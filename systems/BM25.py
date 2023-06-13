@@ -56,10 +56,29 @@ def main(args):
         },
     )
 
-    # # TF_IDF
-    # run_tag = tag("TF_IDF", args.index)
-    # TF_IDF = pt.BatchRetrieve(index, wmodel="TF_IDF", verbose=True)
-    # pt.io.write_results(TF_IDF(topics), results_path + run_tag, run_name=run_tag)
+    # # # TF_IDF
+    # # run_tag = tag("TF_IDF", args.index)
+    # # TF_IDF = pt.BatchRetrieve(index, wmodel="TF_IDF", verbose=True)
+    # # pt.io.write_results(TF_IDF(topics), results_path + run_tag, run_name=run_tag)
+    # # write_metadata_yaml(
+    # #     metadata_path + run_tag + ".yml",
+    # #     {
+    # #         "tag": run_tag,
+    # #         "method": {
+    # #             "retrieval": {
+    # #                 "1": {
+    # #                     "name": "TF_IDF",
+    # #                     "method": "org.terrier.matching.models.TF_IDF",
+    # #                 }
+    # #             },
+    # #         },
+    # #     },
+    # # )
+
+    # # XSqrA_M
+    # run_tag = tag("XSqrA_M", args.index)
+    # XSqrA_M = pt.BatchRetrieve(index, wmodel="XSqrA_M", verbose=True)
+    # pt.io.write_results(XSqrA_M(topics), results_path + run_tag, run_name=run_tag)
     # write_metadata_yaml(
     #     metadata_path + run_tag + ".yml",
     #     {
@@ -67,56 +86,18 @@ def main(args):
     #         "method": {
     #             "retrieval": {
     #                 "1": {
-    #                     "name": "TF_IDF",
-    #                     "method": "org.terrier.matching.models.TF_IDF",
+    #                     "name": "XSqrA_M",
+    #                     "method": "org.terrier.matching.models.XSqr_A_M",
     #                 }
     #             },
     #         },
     #     },
     # )
 
-    # XSqrA_M
-    run_tag = tag("XSqrA_M", args.index)
-    XSqrA_M = pt.BatchRetrieve(index, wmodel="XSqrA_M", verbose=True)
-    pt.io.write_results(XSqrA_M(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "XSqrA_M",
-                        "method": "org.terrier.matching.models.XSqr_A_M",
-                    }
-                },
-            },
-        },
-    )
-
-    # PL2
-    run_tag = tag("PL2", args.index)
-    PL2 = pt.BatchRetrieve(index, wmodel="PL2", verbose=True)
-    pt.io.write_results(PL2(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "PL2",
-                        "method": "org.terrier.matching.models.PL2",
-                    }
-                },
-            },
-        },
-    )
-
-    # # DPH
-    # run_tag = tag("DPH", args.index)
-    # DPH = pt.BatchRetrieve(index, wmodel="DPH", verbose=True)
-    # pt.io.write_results(DPH(topics), results_path + run_tag, run_name=run_tag)
+    # # PL2
+    # run_tag = tag("PL2", args.index)
+    # PL2 = pt.BatchRetrieve(index, wmodel="PL2", verbose=True)
+    # pt.io.write_results(PL2(topics), results_path + run_tag, run_name=run_tag)
     # write_metadata_yaml(
     #     metadata_path + run_tag + ".yml",
     #     {
@@ -124,78 +105,38 @@ def main(args):
     #         "method": {
     #             "retrieval": {
     #                 "1": {
-    #                     "name": "DPH",
-    #                     "method": "org.terrier.matching.models.DPH",
+    #                     "name": "PL2",
+    #                     "method": "org.terrier.matching.models.PL2",
     #                 }
     #             },
     #         },
     #     },
     # )
 
-    # Pseudo relevance feedback
-    # BM25 + RM3
-    run_tag = tag("BM25+RM3", args.index)
-    rm3_pipe = BM25 >> pt.rewrite.RM3(index) >> BM25
-    pt.io.write_results(rm3_pipe(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "bm25",
-                        "method": "org.terrier.matching.models.BM25",
-                        "k_1": "1.2",
-                        "k_3": "8",
-                        "b": "0.75",
-                    },
-                    "2": {
-                        "name": "RM3 query expansion",
-                        "method": "pyterrier.rewrite.RM3",
-                        "fb_terms": "10",
-                        "fb_docs": "3",
-                        "fb_lambda": "0.6",
-                        "reranks": "bm25",
-                    },
-                },
-            },
-        },
-    )
+    # # # DPH
+    # # run_tag = tag("DPH", args.index)
+    # # DPH = pt.BatchRetrieve(index, wmodel="DPH", verbose=True)
+    # # pt.io.write_results(DPH(topics), results_path + run_tag, run_name=run_tag)
+    # # write_metadata_yaml(
+    # #     metadata_path + run_tag + ".yml",
+    # #     {
+    # #         "tag": run_tag,
+    # #         "method": {
+    # #             "retrieval": {
+    # #                 "1": {
+    # #                     "name": "DPH",
+    # #                     "method": "org.terrier.matching.models.DPH",
+    # #                 }
+    # #             },
+    # #         },
+    # #     },
+    # # )
 
-    # BM25 + Bo1
-    run_tag = tag("BM25+Bo1", args.index)
-    bo1_pipe = BM25 >> pt.rewrite.Bo1QueryExpansion(index) >> BM25
-    pt.io.write_results(bo1_pipe(topics), results_path + run_tag, run_name=run_tag)
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "bm25",
-                        "method": "org.terrier.matching.models.BM25",
-                        "k_1": "1.2",
-                        "k_3": "8",
-                        "b": "0.75",
-                    },
-                    "2": {
-                        "name": "Bo1 query expansion",
-                        "method": "pyterrier.rewrite.Bo1QueryExpansion",
-                        "fb_terms": "10",
-                        "fb_docs": "3",
-                        "reranks": "bm25",
-                    },
-                },
-            },
-        },
-    )
-
-    # # BM25 + Axiomatic QE
-    # run_tag = tag("BM25+axio", args.index)
-    # axio_pipe = BM25 >> pt.rewrite.AxiomaticQE(index) >> BM25
-    # pt.io.write_results(axio_pipe(topics), results_path + run_tag, run_name=run_tag)
+    # # Pseudo relevance feedback
+    # # BM25 + RM3
+    # run_tag = tag("BM25+RM3", args.index)
+    # rm3_pipe = BM25 >> pt.rewrite.RM3(index) >> BM25
+    # pt.io.write_results(rm3_pipe(topics), results_path + run_tag, run_name=run_tag)
     # write_metadata_yaml(
     #     metadata_path + run_tag + ".yml",
     #     {
@@ -210,8 +151,38 @@ def main(args):
     #                     "b": "0.75",
     #                 },
     #                 "2": {
-    #                     "name": "axiomatic query expansion",
-    #                     "method": "pyterrier.rewrite.AxiomaticQE",
+    #                     "name": "RM3 query expansion",
+    #                     "method": "pyterrier.rewrite.RM3",
+    #                     "fb_terms": "10",
+    #                     "fb_docs": "3",
+    #                     "fb_lambda": "0.6",
+    #                     "reranks": "bm25",
+    #                 },
+    #             },
+    #         },
+    #     },
+    # )
+
+    # # BM25 + Bo1
+    # run_tag = tag("BM25+Bo1", args.index)
+    # bo1_pipe = BM25 >> pt.rewrite.Bo1QueryExpansion(index) >> BM25
+    # pt.io.write_results(bo1_pipe(topics), results_path + run_tag, run_name=run_tag)
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "bm25",
+    #                     "method": "org.terrier.matching.models.BM25",
+    #                     "k_1": "1.2",
+    #                     "k_3": "8",
+    #                     "b": "0.75",
+    #                 },
+    #                 "2": {
+    #                     "name": "Bo1 query expansion",
+    #                     "method": "pyterrier.rewrite.Bo1QueryExpansion",
     #                     "fb_terms": "10",
     #                     "fb_docs": "3",
     #                     "reranks": "bm25",
@@ -221,180 +192,209 @@ def main(args):
     #     },
     # )
 
-    # fuse: BM25, XSqrA_M, PL2
-    run_tag = tag("RRF(BM25-XSqrA_M-PL2)", args.index)
+    # # # BM25 + Axiomatic QE
+    # # run_tag = tag("BM25+axio", args.index)
+    # # axio_pipe = BM25 >> pt.rewrite.AxiomaticQE(index) >> BM25
+    # # pt.io.write_results(axio_pipe(topics), results_path + run_tag, run_name=run_tag)
+    # # write_metadata_yaml(
+    # #     metadata_path + run_tag + ".yml",
+    # #     {
+    # #         "tag": run_tag,
+    # #         "method": {
+    # #             "retrieval": {
+    # #                 "1": {
+    # #                     "name": "bm25",
+    # #                     "method": "org.terrier.matching.models.BM25",
+    # #                     "k_1": "1.2",
+    # #                     "k_3": "8",
+    # #                     "b": "0.75",
+    # #                 },
+    # #                 "2": {
+    # #                     "name": "axiomatic query expansion",
+    # #                     "method": "pyterrier.rewrite.AxiomaticQE",
+    # #                     "fb_terms": "10",
+    # #                     "fb_docs": "3",
+    # #                     "reranks": "bm25",
+    # #                 },
+    # #             },
+    # #         },
+    # #     },
+    # # )
 
-    baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
-    baseline_ranx.name = "BM25"
+    # # fuse: BM25, XSqrA_M, PL2
+    # run_tag = tag("RRF(BM25-XSqrA_M-PL2)", args.index)
 
-    runs = []
-    runs.append(Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
+    # baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
+    # baseline_ranx.name = "BM25"
 
-    fuse_method = "rrf"
+    # runs = []
+    # runs.append(Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec"))
+    # runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
+    # runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
 
-    run_rrf = fuse(runs=runs, method=fuse_method)
-    run_rrf.name = run_tag
-    run_rrf.save(results_path + run_tag, kind="trec")
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "bm25",
-                        "method": "org.terrier.matching.models.BM25",
-                        "k_1": "1.2",
-                        "k_3": "8",
-                        "b": "0.75",
-                    },
-                    "2": {
-                        "name": "XSqrA_M",
-                        "method": "org.terrier.matching.models.XSqr_A_M",
-                    },
-                    "3": {
-                        "name": "PL2",
-                        "method": "org.terrier.matching.models.PL2",
-                    },
-                    "4": {
-                        "name": "Reciprocal Rank Fusion (RRF)",
-                        "method": "ranx.fusion.rrf",
-                        "min_k": "10",
-                        "max_k": "100",
-                        "step": "10",
-                        "fuses": [
-                            "bm25",
-                            "XSqrA_M",
-                            "PL2",
-                        ],
-                    },
-                },
-            },
-        },
-    )
+    # fuse_method = "rrf"
 
-    # fuse: BM25-RM3, XSqrA_M, PL2
-    run_tag = tag("RRF(BM25RM3-XSqrA_M-PL2)", args.index)
-    baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
-    baseline_ranx.name = "BM25"
+    # run_rrf = fuse(runs=runs, method=fuse_method)
+    # run_rrf.name = run_tag
+    # run_rrf.save(results_path + run_tag, kind="trec")
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "bm25",
+    #                     "method": "org.terrier.matching.models.BM25",
+    #                     "k_1": "1.2",
+    #                     "k_3": "8",
+    #                     "b": "0.75",
+    #                 },
+    #                 "2": {
+    #                     "name": "XSqrA_M",
+    #                     "method": "org.terrier.matching.models.XSqr_A_M",
+    #                 },
+    #                 "3": {
+    #                     "name": "PL2",
+    #                     "method": "org.terrier.matching.models.PL2",
+    #                 },
+    #                 "4": {
+    #                     "name": "Reciprocal Rank Fusion (RRF)",
+    #                     "method": "ranx.fusion.rrf",
+    #                     "min_k": "10",
+    #                     "max_k": "100",
+    #                     "step": "10",
+    #                     "fuses": [
+    #                         "bm25",
+    #                         "XSqrA_M",
+    #                         "PL2",
+    #                     ],
+    #                 },
+    #             },
+    #         },
+    #     },
+    # )
 
-    runs = []
-    runs.append(Run.from_file("results/trec/IRC_BM25+RM3." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
+    # # fuse: BM25-RM3, XSqrA_M, PL2
+    # run_tag = tag("RRF(BM25RM3-XSqrA_M-PL2)", args.index)
+    # baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
+    # baseline_ranx.name = "BM25"
 
-    fuse_method = "rrf"
+    # runs = []
+    # runs.append(Run.from_file("results/trec/IRC_BM25+RM3." + args.index, kind="trec"))
+    # runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
+    # runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
 
-    run_rrf = fuse(runs=runs, method=fuse_method)
-    run_rrf.name = run_tag
-    run_rrf.save(results_path + run_tag, kind="trec")
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "bm25",
-                        "method": "org.terrier.matching.models.BM25",
-                        "k_1": "1.2",
-                        "k_3": "8",
-                        "b": "0.75",
-                    },
-                    "2": {
-                        "name": "RM3 query expansion",
-                        "method": "pyterrier.rewrite.RM3",
-                        "fb_terms": "10",
-                        "fb_docs": "3",
-                        "fb_lambda": "0.6",
-                        "reranks": "bm25",
-                    },
-                    "3": {
-                        "name": "XSqrA_M",
-                        "method": "org.terrier.matching.models.XSqr_A_M",
-                    },
-                    "4": {
-                        "name": "PL2",
-                        "method": "org.terrier.matching.models.PL2",
-                    },
-                    "5": {
-                        "name": "Reciprocal Rank Fusion (RRF)",
-                        "method": "ranx.fusion.rrf",
-                        "min_k": "10",
-                        "max_k": "100",
-                        "step": "10",
-                        "fuses": [
-                            "RM3 query expansion",
-                            "XSqrA_M",
-                            "PL2",
-                        ],
-                    },
-                },
-            },
-        },
-    )
+    # fuse_method = "rrf"
 
-    # fuse: BM25-Bo1, XSqrA_M, PL2
-    run_tag = tag("RRF(BM25+Bo1-XSqrA_M-PL2)", args.index)
-    baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
-    baseline_ranx.name = "BM25"
+    # run_rrf = fuse(runs=runs, method=fuse_method)
+    # run_rrf.name = run_tag
+    # run_rrf.save(results_path + run_tag, kind="trec")
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "bm25",
+    #                     "method": "org.terrier.matching.models.BM25",
+    #                     "k_1": "1.2",
+    #                     "k_3": "8",
+    #                     "b": "0.75",
+    #                 },
+    #                 "2": {
+    #                     "name": "RM3 query expansion",
+    #                     "method": "pyterrier.rewrite.RM3",
+    #                     "fb_terms": "10",
+    #                     "fb_docs": "3",
+    #                     "fb_lambda": "0.6",
+    #                     "reranks": "bm25",
+    #                 },
+    #                 "3": {
+    #                     "name": "XSqrA_M",
+    #                     "method": "org.terrier.matching.models.XSqr_A_M",
+    #                 },
+    #                 "4": {
+    #                     "name": "PL2",
+    #                     "method": "org.terrier.matching.models.PL2",
+    #                 },
+    #                 "5": {
+    #                     "name": "Reciprocal Rank Fusion (RRF)",
+    #                     "method": "ranx.fusion.rrf",
+    #                     "min_k": "10",
+    #                     "max_k": "100",
+    #                     "step": "10",
+    #                     "fuses": [
+    #                         "RM3 query expansion",
+    #                         "XSqrA_M",
+    #                         "PL2",
+    #                     ],
+    #                 },
+    #             },
+    #         },
+    #     },
+    # )
 
-    runs = []
-    runs.append(Run.from_file("results/trec/IRC_BM25+Bo1." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
-    runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
+    # # fuse: BM25-Bo1, XSqrA_M, PL2
+    # run_tag = tag("RRF(BM25+Bo1-XSqrA_M-PL2)", args.index)
+    # baseline_ranx = Run.from_file("results/trec/IRC_BM25." + args.index, kind="trec")
+    # baseline_ranx.name = "BM25"
 
-    fuse_method = "rrf"
+    # runs = []
+    # runs.append(Run.from_file("results/trec/IRC_BM25+Bo1." + args.index, kind="trec"))
+    # runs.append(Run.from_file("results/trec/IRC_XSqrA_M." + args.index, kind="trec"))
+    # runs.append(Run.from_file("results/trec/IRC_PL2." + args.index, kind="trec"))
 
-    run_rrf = fuse(runs=runs, method=fuse_method)
-    run_rrf.name = run_tag
-    run_rrf.save("results/trec/RRF(BM25+Bo1-XSqrA_M-PL2)." + args.index, kind="trec")
-    write_metadata_yaml(
-        metadata_path + run_tag + ".yml",
-        {
-            "tag": run_tag,
-            "method": {
-                "retrieval": {
-                    "1": {
-                        "name": "bm25",
-                        "method": "org.terrier.matching.models.BM25",
-                        "k_1": "1.2",
-                        "k_3": "8",
-                        "b": "0.75",
-                    },
-                    "2": {
-                        "name": "Bo1 query expansion",
-                        "method": "pyterrier.rewrite.Bo1QueryExpansion",
-                        "fb_terms": "10",
-                        "fb_docs": "3",
-                        "reranks": "bm25",
-                    },
-                    "3": {
-                        "name": "XSqrA_M",
-                        "method": "org.terrier.matching.models.XSqr_A_M",
-                    },
-                    "4": {
-                        "name": "PL2",
-                        "method": "org.terrier.matching.models.PL2",
-                    },
-                    "5": {
-                        "name": "Reciprocal Rank Fusion (RRF)",
-                        "method": "ranx.fusion.rrf",
-                        "min_k": "10",
-                        "max_k": "100",
-                        "step": "10",
-                        "fuses": [
-                            "RM3 query expansion",
-                            "XSqrA_M",
-                            "PL2",
-                        ],
-                    },
-                },
-            },
-        },
-    )
+    # fuse_method = "rrf"
+
+    # run_rrf = fuse(runs=runs, method=fuse_method)
+    # run_rrf.name = run_tag
+    # run_rrf.save("results/trec/RRF(BM25+Bo1-XSqrA_M-PL2)." + args.index, kind="trec")
+    # write_metadata_yaml(
+    #     metadata_path + run_tag + ".yml",
+    #     {
+    #         "tag": run_tag,
+    #         "method": {
+    #             "retrieval": {
+    #                 "1": {
+    #                     "name": "bm25",
+    #                     "method": "org.terrier.matching.models.BM25",
+    #                     "k_1": "1.2",
+    #                     "k_3": "8",
+    #                     "b": "0.75",
+    #                 },
+    #                 "2": {
+    #                     "name": "Bo1 query expansion",
+    #                     "method": "pyterrier.rewrite.Bo1QueryExpansion",
+    #                     "fb_terms": "10",
+    #                     "fb_docs": "3",
+    #                     "reranks": "bm25",
+    #                 },
+    #                 "3": {
+    #                     "name": "XSqrA_M",
+    #                     "method": "org.terrier.matching.models.XSqr_A_M",
+    #                 },
+    #                 "4": {
+    #                     "name": "PL2",
+    #                     "method": "org.terrier.matching.models.PL2",
+    #                 },
+    #                 "5": {
+    #                     "name": "Reciprocal Rank Fusion (RRF)",
+    #                     "method": "ranx.fusion.rrf",
+    #                     "min_k": "10",
+    #                     "max_k": "100",
+    #                     "step": "10",
+    #                     "fuses": [
+    #                         "RM3 query expansion",
+    #                         "XSqrA_M",
+    #                         "PL2",
+    #                     ],
+    #                 },
+    #             },
+    #         },
+    #     },
+    # )
 
 
 if __name__ == "__main__":
