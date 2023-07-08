@@ -1,0 +1,358 @@
+System Name: IRC_d2q+BM25
+Description (short description of the system): Default PyTerrier BM25 run on an expanded index with Doc2Query. Each document was expanded with ten queries from the macavaney/doc2query-t5-base-msmarco model. The indexing with document expansion took around ten hours per sub-collection on a single NVIDIA GeForce RTX 3070. The model was not further trained.
+************
+schema: "https://www.ir-metadata.org/"
+schema-version: 0.1
+run-version: 1.0
+tag: IRC_d2q+BM25
+platform:
+  hardware:
+    cpu:
+      model: 12th Gen Intel(R) Core(TM) i9-12900K
+      architecture: x86_64
+      operation mode: 64-bit
+      number of cores: 24
+    gpu:
+    - model: NVIDIA GeForce RTX 3070
+      memory: 8192.0MB
+    ram:
+      ram: 62 GB
+  operating system:
+    platform: Linux
+    kernel: 5.15.0-48-generic
+    distribution: '#54-Ubuntu SMP Fri Aug 26 13:26:29 UTC 2022'
+  software:
+    libraries:
+    - _libgcc_mutex==0.1
+    - _openmp_mutex==5.1
+    - absl-py==1.4.0
+    - alembic==1.10.3
+    - appdirs==1.4.4
+    - asttokens==2.0.5
+    - astunparse==1.6.3
+    - attrs==22.1.0
+    - backcall==0.2.0
+    - beautifulsoup4==4.12.2
+    - black==19.3b0
+    - blas==1.0
+    - blis==0.7.9
+    - bottleneck==1.3.5
+    - brotli==1.0.9
+    - brotli-bin==1.0.9
+    - bzip2==1.0.8
+    - ca-certificates==2023.01.10
+    - cachetools==5.3.0
+    - catalogue==2.0.8
+    - cbor==1.0.0
+    - cbor2==5.4.6
+    - certifi==2022.12.7
+    - charset-normalizer==3.1.0
+    - chest==0.2.3
+    - click==8.0.4
+    - cloudpickle==2.2.1
+    - cmake==3.26.3
+    - colbert==0.2.0
+    - comm==0.1.2
+    - confection==0.0.4
+    - contourpy==1.0.7
+    - cwl-eval==1.0.12
+    - cycler==0.11.0
+    - cymem==2.0.7
+    - databricks-cli==0.17.6
+    - debugpy==1.5.1
+    - decorator==5.1.1
+    - deprecated==1.2.13
+    - dill==0.3.6
+    - docker==6.0.1
+    - en-core-web-md==3.5.0
+    - entrypoints==0.4
+    - executing==0.8.3
+    - faiss-gpu==1.6.3
+    - filelock==3.12.0
+    - flask==2.2.3
+    - flatbuffers==23.3.3
+    - fonttools==4.39.3
+    - freetype==2.12.1
+    - fsspec==2023.4.0
+    - gast==0.4.0
+    - giflib==5.2.1
+    - gitdb==4.0.10
+    - gitpython==3.1.31
+    - google-auth==2.17.3
+    - google-auth-oauthlib==1.0.0
+    - google-pasta==0.2.0
+    - gputil==1.4.0
+    - greenlet==2.0.2
+    - grpcio==1.54.0
+    - gunicorn==20.1.0
+    - h5py==3.8.0
+    - heapdict==1.0.1
+    - huggingface-hub==0.14.1
+    - idna==3.4
+    - ijson==3.2.0.post0
+    - importlib-metadata==6.5.0
+    - importlib-resources==5.12.0
+    - importlib_resources==5.2.0
+    - intel-openmp==2021.4.0
+    - ipykernel==6.19.2
+    - ipython==8.12.0
+    - ir-datasets==0.5.4
+    - ir-measures==0.3.1
+    - itsdangerous==2.1.2
+    - jax==0.4.8
+    - jedi==0.18.1
+    - jinja2==3.1.2
+    - joblib==1.2.0
+    - jpeg==9e
+    - jupyter_client==7.4.9
+    - jupyter_core==4.11.2
+    - keras==2.12.0
+    - kiwisolver==1.4.4
+    - langcodes==3.3.0
+    - lcms2==2.12
+    - ld_impl_linux-64==2.38
+    - lerc==3.0
+    - libbrotlicommon==1.0.9
+    - libbrotlidec==1.0.9
+    - libbrotlienc==1.0.9
+    - libclang==16.0.0
+    - libdeflate==1.17
+    - libffi==3.4.2
+    - libgcc-ng==11.2.0
+    - libgomp==11.2.0
+    - libpng==1.6.39
+    - libsodium==1.0.18
+    - libstdcxx-ng==11.2.0
+    - libtiff==4.5.0
+    - libuuid==1.41.5
+    - libwebp==1.2.4
+    - libwebp-base==1.2.4
+    - lightgbm==3.3.5
+    - lit==16.0.1
+    - llvmlite==0.40.0
+    - lxml==4.9.2
+    - lz4==4.3.2
+    - lz4-c==1.9.4
+    - mako==1.2.4
+    - markdown==3.4.3
+    - markdown-it-py==2.2.0
+    - markupsafe==2.1.2
+    - matchpy==0.5.5
+    - matplotlib-base==3.7.1
+    - matplotlib-inline==0.1.6
+    - matplotlib-venn==0.11.9
+    - matplotlib2tikz==0.7.6
+    - mdurl==0.1.2
+    - mkl==2021.4.0
+    - mkl-service==2.4.0
+    - mkl_fft==1.3.1
+    - mkl_random==1.2.2
+    - ml-dtypes==0.1.0
+    - mlflow==2.3.0
+    - more-itertools==9.1.0
+    - mpmath==1.3.0
+    - multiset==2.1.1
+    - munkres==1.1.4
+    - murmurhash==1.0.9
+    - mypy==0.981
+    - mypy_extensions==0.4.3
+    - ncurses==6.4
+    - nest-asyncio==1.5.6
+    - networkx==3.1
+    - npids==0.0.2
+    - nptyping==1.4.4
+    - numba==0.57.0
+    - numexpr==2.8.4
+    - numpy==1.23.5
+    - numpy-base==1.23.5
+    - nvidia-cublas-cu11==11.10.3.66
+    - nvidia-cuda-cupti-cu11==11.7.101
+    - nvidia-cuda-nvrtc-cu11==11.7.99
+    - nvidia-cuda-runtime-cu11==11.7.99
+    - nvidia-cudnn-cu11==8.5.0.96
+    - nvidia-cufft-cu11==10.9.0.58
+    - nvidia-curand-cu11==10.2.10.91
+    - nvidia-cusolver-cu11==11.4.0.1
+    - nvidia-cusparse-cu11==11.7.4.91
+    - nvidia-nccl-cu11==2.14.3
+    - nvidia-nvtx-cu11==11.7.91
+    - oauthlib==3.2.2
+    - openssl==1.1.1t
+    - opt-einsum==3.3.0
+    - orjson==3.8.11
+    - packaging==23.0
+    - pandas==1.5.3
+    - parso==0.8.3
+    - pathy==0.10.1
+    - patsy==0.5.3
+    - pexpect==4.8.0
+    - pickleshare==0.7.5
+    - pillow==9.5.0
+    - pip==23.0.1
+    - preshed==3.0.8
+    - prompt-toolkit==3.0.36
+    - protobuf==4.22.3
+    - psutil==5.9.0
+    - ptyprocess==0.7.0
+    - pure_eval==0.2.2
+    - py-cpuinfo==9.0.0
+    - pyarrow==11.0.0
+    - pyasn1==0.5.0
+    - pyasn1-modules==0.3.0
+    - pyautocorpus==0.1.9
+    - pydantic==1.10.7
+    - pygments==2.15.1
+    - pyjnius==1.4.2
+    - pyjwt==2.6.0
+    - pyparsing==3.0.9
+    - pyterrier-colbert==0.0.1
+    - pyterrier-doc2query==0.0.1
+    - pyterrier-t5==0.0.1
+    - python==3.8.16
+    - python-dateutil==2.8.2
+    - python-terrier==0.9.2
+    - pytrec-eval-terrier==0.5.5
+    - pytz==2022.7
+    - pyyaml==6.0
+    - pyzmq==23.2.0
+    - querystring-parser==1.2.4
+    - ranx==0.3.8
+    - readline==8.2
+    - regex==2023.3.23
+    - requests==2.28.2
+    - requests-oauthlib==1.3.1
+    - rich==13.3.5
+    - rsa==4.9
+    - sacremoses==0.0.53
+    - scikit-learn==1.2.2
+    - scipy==1.10.1
+    - seaborn==0.12.2
+    - sentencepiece==0.1.98
+    - setuptools==66.0.0
+    - six==1.16.0
+    - smart-open==6.3.0
+    - smmap==5.0.0
+    - soupsieve==2.4.1
+    - spacy==3.5.2
+    - spacy-legacy==3.0.12
+    - spacy-loggers==1.0.4
+    - spacy-universal-sentence-encoder==0.4.6
+    - sqlalchemy==2.0.9
+    - sqlite==3.41.2
+    - sqlparse==0.4.4
+    - src==0.0.0
+    - srsly==2.4.6
+    - stack_data==0.2.0
+    - statsmodels==0.13.5
+    - sympy==1.11.1
+    - tabulate==0.9.0
+    - tensorboard==2.12.2
+    - tensorboard-data-server==0.7.0
+    - tensorboard-plugin-wit==1.8.1
+    - tensorflow==2.12.0
+    - tensorflow-estimator==2.12.0
+    - tensorflow-hub==0.13.0
+    - tensorflow-io-gcs-filesystem==0.32.0
+    - termcolor==2.3.0
+    - thinc==8.1.9
+    - threadpoolctl==3.1.0
+    - tk==8.6.12
+    - tokenizers==0.13.3
+    - toml==0.10.2
+    - tomli==2.0.1
+    - torch==2.0.0
+    - tornado==6.2
+    - tqdm==4.65.0
+    - traitlets==5.7.1
+    - transformers==4.28.1
+    - trec-car-tools==2.6
+    - triton==2.0.0
+    - typer==0.7.0
+    - typing_extensions==4.5.0
+    - typish==1.9.3
+    - tzdata==2023c
+    - ujson==5.7.0
+    - unlzw3==0.2.2
+    - urllib3==1.26.15
+    - warc3-wet==0.2.3
+    - warc3-wet-clueweb09==0.2.5
+    - wasabi==1.1.1
+    - wcwidth==0.2.5
+    - websocket-client==1.5.1
+    - werkzeug==2.2.3
+    - wget==3.2
+    - wheel==0.38.4
+    - wrapt==1.14.1
+    - xgboost==1.7.5
+    - xz==5.2.10
+    - zeromq==4.3.4
+    - zipp==3.15.0
+    - zlib==1.2.13
+    - zlib-state==0.1.5
+    - zstd==1.5.5
+research goal:
+  venue:
+    name: CLEF
+    year: 2023
+implementation:
+  cmd: python -m src.create_index --index WT --d2q && python -m src.create_index --index ST --d2q && python -m src.create_index --index LT --d2q && python -m systems.d2q+BM25 --index WT_d2q && python -m systems.d2q+BM25 --index LT_d2q && python -m systems.d2q+BM25 --index ST_d2q
+  source:
+    repository: https://github.com/irgroup/CLEF2023-LongEval-IRC.git
+    commit: cbcc0e3e970ff0d906615e3b898930c0e2ae678d
+    'lang:':
+    - Text
+    - Markdown
+    - HyPhy
+    - YAML
+    - Jupyter Notebook
+    - Python
+    - JSON
+    - CSV
+    - INI
+method:
+  automatic: true
+  indexing:
+    stemmer: PorterStemmer
+    stopwords: removed
+    Doc2Query:
+      method: pyterrier_doc2query.Doc2Query
+      checkpoint: macavaney/doc2query-t5-base-msmarco
+      num_samples: 10
+  retrieval:
+    '1':
+      name: bm25
+      method: org.terrier.matching.models.BM25
+      k_1: '1.2'
+      k_3: '8'
+      b: '0.75'
+actor:
+  name: Jueri Keller
+  orcid: 0000-0002-9392-8646
+  team: IRCologne
+  mail: jueri.keller@smail.th-koeln.de
+  role: experimenter
+  degree: B.Sc
+  github: https://github.com/jueri
+  twitter: https://twitter.com/juerikeller
+data:
+  test collection:
+    name: LongEval Test Collection
+    source: https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-5139
+    language: English
+  training collection:
+    name: LongEval Train Collection
+    source: https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-5010
+    language: English
+
+************
+Yes/No Questions
+
+Did you use any statistical ranking model? (yes/no): yes
+Did you use any deep neural network model? (yes/no): yes
+Did you use a sparse neural model? (yes/no): no
+Did you use a dense neural model? (yes/no): no
+Did you use more than a single retrieval model? (yes/no): no
+Did you use French or English documents (French/English/both): English
+Did you use provided English translations (yes/no): yes
+Did you use any manual intervention on the translations? (yes/no): no
+Did you use any manual intervention on the results? (yes/no): no
