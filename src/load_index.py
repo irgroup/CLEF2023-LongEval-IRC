@@ -51,10 +51,7 @@ def setup_system(
 
     index = _load_index(config[index_name]["index_name"])
     topics = pt.io.read_topics(os.path.join(BASE_PATH, config[index_name][split]["topics"]))
-    if train:
-        qrels = pt.io.read_qrels(os.path.join(BASE_PATH, config[index_name][split]["qrels"]))
-    else:
-        qrels = None
+    qrels = pt.io.read_qrels(os.path.join(BASE_PATH, config[index_name][split]["qrels"]))
 
     return index, topics, qrels
 

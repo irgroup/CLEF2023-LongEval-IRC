@@ -7,18 +7,21 @@ WT:
     qrels: "data/publish/French/Qrels/train.txt"
   test:
     topics: "data/publish/English/Queries/heldout.trec"
+    qrels: "data/longeval-relevance-judgements/heldout-test.txt"
 ST:
   index_name: "index_ST"
   docs: "data/test-collection/A-Short-July/English/Documents/Trec/"
   urls: "data/test-collection/A-Short-July/French/Documents/urls.txt"
   test:
     topics: "data/test-collection/A-Short-July/English/Queries/test07.trec"
+    qrels: "data/longeval-relevance-judgements/a-short-july.txt"
 LT:
   index_name: "index_LT"
   docs: "data/test-collection/B-Long-September/English/Documents/Trec/"
   urls: "data/test-collection/B-Long-September/French/Documents/urls.txt"
   test:
     topics: "data/test-collection/B-Long-September/English/Queries/test09.trec"
+    qrels: "data/longeval-relevance-judgements/b-long-september.txt"
 
 WT_d2q:
   index_name: "WT_d2q"
