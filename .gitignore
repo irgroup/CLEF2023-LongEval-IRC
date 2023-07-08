@@ -127,7 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-data/*
+data/longeval-relevance-judgements
+data/publish
+data/test-collection
 index*
 !data/.gitkeep
+data/replicability
+data/reproducibility
 
