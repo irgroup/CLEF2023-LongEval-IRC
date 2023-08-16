@@ -17,17 +17,13 @@ import torch
 import faiss
 from tqdm import tqdm
 
-
-with open("settings.yml", "r") as yamlfile:
-    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
-
-
-
-tokenizer = AutoTokenizer.from_pretrained('intfloat/e5-base')
-model = AutoModel.from_pretrained('intfloat/e5-base')
-#prepare model for gpu use
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-_ = model.to(device)
+def load_model(model_name, tokenizer_name):
+    global tokenizer, model, device
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    model = AutoModel.from_pretrained(model_name)
+    #prepare model for gpu use
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    _ = model.to(device)
 
 
 def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
@@ -40,7 +36,7 @@ def calc_embeddings(texts, mode='passage'):
   input_texts = [f"{mode}: {text}" for text in texts]
   batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
   for key, val in batch_dict.items():
-    batch_dict[key] = batch_dict[key].cuda(non_blocking=True)
+    batch_dict[key] = batch_dict[key].to(device, non_blocking=True)
 
   outputs = model(**batch_dict)
   embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
@@ -115,7 +111,14 @@ def create_index(index_dir, size=768):
     faiss.write_index(index, index_dir+"/index")
 
 
+
+
 def main(args):
+    load_model('/model/E5-base', 'intfloat/e5-base')
+
+    with open("settings.yml", "r") as yamlfile:
+        config = yaml.load(yamlfile, Loader=yaml.FullLoader)
+        
     # Topics
     logger.setLevel("INFO")
 
@@ -139,6 +142,7 @@ def main(args):
 
 
 if __name__ == "__main__":
+    
     parser = ArgumentParser(description="Create an pyterrier index from a config.")
 
     # input arguments

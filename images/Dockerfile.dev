@@ -1,0 +1,12 @@
+FROM webis/tira-ir-starter-pyterrier:0.0.2-base
+
+RUN pip install transformers==4.28.1 faiss-cpu==1.6.3
+
+RUN apt-get -y install git-lfs && \
+        mkdir /model && \
+        git lfs install && \
+        git clone https://huggingface.co/intfloat/e5-base /model/E5-base && \
+        rm -Rf .git
+
+RUN python3 -c "from transformers import AutoTokenizer, AutoModel; AutoTokenizer.from_pretrained('intfloat/e5-base')"
+

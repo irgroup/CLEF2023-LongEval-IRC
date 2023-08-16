@@ -67,3 +67,17 @@ python -m src.create_index_e5 --index LT_e5_base --batch_size 150 --save 1000`
 - Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the limits of transfer learning with a unified text-to-text transformer. Journal of Machine Learning Research, 21, 140:1-140:67.
 - Robertson, S., Walker, S., Jones, S., Hancock-Beaulieu, M., & Gatford, M. (1994). Okapi at TREC-3.
 - Wang, L., Yang, N., Huang, X., Jiao, B., Yang, L., Jiang, D., Majumder, R., & Wei, F. (2022). Text embeddings by weakly-supervised contrastive pre-training. CoRR, abs/2212.03533. https://doi.org/10.48550/arXiv.2212.03533
+
+
+## Docker
+Builde dev: `docker build -t registry.webis.de/code-research/tira/tira-user-irc/longeval-dev:0.0.1 -f images/Dockerfile.dev .`
+
+`docker build -t registry.webis.de/code-research/tira/tira-user-irc/longeval:0.0.1 -f images/Dockerfile .`
+
+Test locally with:
+
+`tira-run --image registry.webis.de/code-research/tira/tira-user-irc/longeval:0.0.1 --input-directory $PWD/images/rerank_dataset --command 'python3 /code/src/e5_rerank.py --similarity dot --input $inputDataset --output $outputDir`
+
+or
+
+`tira-run --image registry.webis.de/code-research/tira/tira-user-irc/longeval:0.0.1 --input-directory $PWD/images/rerank_dataset --command 'python3 /code/src/e5_rerank.py --similarity cos --input $inputDataset --output $outputDir'`
