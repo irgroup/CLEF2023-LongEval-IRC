@@ -10,3 +10,4 @@ RUN apt-get -y install git-lfs && \
 
 RUN python3 -c "from transformers import AutoTokenizer, AutoModel; AutoTokenizer.from_pretrained('intfloat/e5-base')"
 
+RUN pip install trectools
