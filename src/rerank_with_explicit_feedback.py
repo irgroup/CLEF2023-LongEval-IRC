@@ -5,6 +5,7 @@ from tira.third_party_integrations import (
     persist_and_normalize_run,
     ensure_pyterrier_is_loaded,
 )
+from pt.rewrite import *
 from argparse import ArgumentParser
 
 import pandas as pd
@@ -77,9 +78,30 @@ def ground_truth_ranking_from_training_data_transformer(df):
     return pd.concat(ret)
 
 
-def main(pipeline):
+def build_pipeline(index, expansion_model, wmodel):
+
+    explicit_relevance_feedback = pt.apply.generic(
+        ground_truth_ranking_from_training_data_transformer
+    )
+    query_expansion = globals()[expansion_model](index)
+
+    retrieval = pt.BatchRetrieve(index, wmodel=wmodel)
+
+    ret = explicit_relevance_feedback >> query_expansion >> retrieval
+    return ret
+
+
+def load_queries(dir):
+    return pt.IndexFactory.of(dir)
+
+
+def load_documents(dir):
+    return pt.io.read_topics(dir)
+
+
+def main():
     parser = ArgumentParser(description="Rerank with explicit relevance feedback")
-    
+
     parser.add_argument(
         "--input", default="../images/rerank_dataset", help="Path to dataset"
     )
@@ -87,15 +109,28 @@ def main(pipeline):
         "--output",
         default="/tmp",
     )
-
+    parser.add_argument(
+        "--expansion_model",
+        default="/tmp",
+    )
+    parser.add_argument(
+        "--wmodel",
+        default="/tmp",
+    )
+    args = parser.parse_args()
 
     global doc_translation
     doc_translation = load_doc_translation()
 
-    explicit_relevance_feedback = pt.apply.generic(
-        ground_truth_ranking_from_training_data_transformer
-    )
+    index = load_queries(args.input)
+    queries = load_documents(args.input)
 
-    system = explicit_relevance_feedback >> pipeline
+    system = build_pipeline(index, expansion_model=args.expansion_model, wmodel=args.wmodel)
 
     run = system(queries)
+
+    persist_and_normalize_run(run, "IRC", args.output)
+
+
+if __name__ == "__main__":
+    main()
